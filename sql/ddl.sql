@@ -14,16 +14,19 @@ DROP TABLE IF EXISTS tickets;
 DROP TABLE IF EXISTS users;
 DROP TABLE IF EXISTS categories;
 
--- Skapa tabell 1: users
+-- Skapa tabell 1: users (updated)
 CREATE TABLE users (
     user_id INT AUTO_INCREMENT PRIMARY KEY,
     username VARCHAR(50) NOT NULL,
     password VARCHAR(255) NOT NULL,
     email VARCHAR(100) NOT NULL,
-    role ENUM('user', 'agent') NOT NULL,
+    role ENUM('Admin', 'user', 'agent') NOT NULL, -- Added 'Admin'
     department VARCHAR(100) DEFAULT 'Not Assigned',
-    CONSTRAINT chk_role CHECK (role IN ('Admin','user', 'agent'))
+    CONSTRAINT chk_role CHECK (role IN ('Admin', 'user', 'agent'))
 );
+-- Insert the default admin credentials -- PASSWORD FOR THE ADMIN 9912
+INSERT INTO users (username, password, email, role, department)
+VALUES ('admin', '$2b$10$nGp1Dcgr8GGBqbXpeVe0YOHngkO1qd6M5vFM.Ee3ckgRneBls9zZa', 'admin@admin.ts', 'Admin', 'Management');
 
 -- Skapa tabell 2: tickets
 CREATE TABLE tickets (
@@ -70,6 +73,7 @@ CREATE TABLE knowledgeBase (
     FOREIGN KEY (created_by) REFERENCES users(user_id) ON DELETE SET NULL
 );
 
+
 -- Skapa tabell 6: emailtickets
 CREATE TABLE emailtickets (
     email_ticket_id INT AUTO_INCREMENT PRIMARY KEY,
@@ -85,7 +89,44 @@ CREATE TABLE categories (
     category_id INT AUTO_INCREMENT PRIMARY KEY,
     category_name VARCHAR(255) NOT NULL
 );
+-- Insert default categories
+INSERT INTO categories(category_name)
+VALUES ('software'), ('network'), ('hardware'), ('security'), ('other');
 
+-- Stored procedure for admin login
+DELIMITER $$
+CREATE PROCEDURE AdminLogin (
+    IN p_email VARCHAR(100),
+    IN p_password VARCHAR(255)
+)
+BEGIN
+    DECLARE admin_count INT;
+
+    -- Check if admin credentials are valid
+    SELECT COUNT(*) INTO admin_count 
+    FROM users 
+    WHERE email = p_email 
+    AND password = p_password 
+    AND role = 'Admin';
+
+    IF admin_count = 0 THEN
+        SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'Invalid admin credentials';
+    END IF;
+END$$
+DELIMITER ;
+
+DELIMITER $$
+CREATE PROCEDURE UpdateUserRole (
+    IN p_user_id INT,
+    IN p_new_role ENUM('user', 'agent')
+)
+BEGIN
+    -- Update the user's role
+    UPDATE users
+    SET role = p_new_role
+    WHERE user_id = p_user_id;
+END$$
+DELIMITER ;
 
 -- Trigger to set department based on role
 DELIMITER //
@@ -102,36 +143,33 @@ END;
 //
 DELIMITER ;
 
--- Stored procedure for user creation
+-- Stored procedure for user creation (updated)
 DELIMITER $$
 CREATE PROCEDURE CreateUser (
     IN p_username VARCHAR(255),
     IN p_password VARCHAR(255),
     IN p_email VARCHAR(255),
+    IN p_role ENUM('user', 'agent'),
     IN p_department VARCHAR(255),
-    IN p_secret_word VARCHAR(255)
+    IN p_creator_role ENUM('Admin', 'user', 'agent')
 )
 BEGIN
-    DECLARE user_role ENUM('user', 'agent');
     DECLARE existing_user_count INT;
+
+    -- Only admin can create new users
+    IF p_creator_role != 'Admin' THEN
+        SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'Only Admin can create new users';
+    END IF;
 
     -- Check if the user with the same email already exists
     SELECT COUNT(*) INTO existing_user_count FROM users WHERE email = p_email;
 
     IF existing_user_count > 0 THEN
-        -- If user exists, throw an error
         SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'User with this email already exists';
     ELSE
-        -- Check if the secret word matches 'IsYouForget'
-        IF p_secret_word = 'AGENT99:00' THEN
-            SET user_role = 'agent';
-        ELSE
-            SET user_role = 'user';
-        END IF;
-
-        -- Insert into the users table with the determined role
+        -- Insert into users table
         INSERT INTO users (username, password, email, role, department)
-        VALUES (p_username, p_password, p_email, user_role, p_department);
+        VALUES (p_username, p_password, p_email, p_role, p_department);
     END IF;
 END$$
 DELIMITER ;
@@ -243,4 +281,20 @@ BEGIN
     SELECT * FROM tickets
     ORDER BY category ASC;
 END$$
+DELIMITER ;
+
+DELIMITER $$
+CREATE PROCEDURE AddCategory (
+    IN p_category_name VARCHAR(255)
+)
+BEGIN
+    -- Check if the category already exists
+    IF (SELECT COUNT(*) FROM categories WHERE category_name = p_category_name) > 0 THEN
+        SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'Category already exists';
+    ELSE
+        -- Insert the new category if it doesn't exist
+        INSERT INTO categories (category_name)
+        VALUES (p_category_name);
+    END IF;
+END $$
 DELIMITER ;

@@ -125,6 +125,10 @@ body .main-content {
     box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
 }
 
+#statusSelect{
+    width: 70px;
+}
+
 .ticket-section h2 {
     font-size: 2rem;
     margin-bottom: 20px;
@@ -268,26 +272,6 @@ footer p {
     margin-bottom: 20px;
 }
 
-.switch-buttons button {
-    background-color: #007bff;
-    color: #fff;
-    border: none;
-    padding: 10px 20px;
-    font-size: 16px;
-    cursor: pointer;
-    transition: background-color 0.3s ease;
-    width: 25%;
-    outline: none;
-}
-
-.switch-buttons button.active {
-    background-color: #0056b3;
-}
-
-.switch-buttons button:hover {
-    background-color: #0056b3;
-}
-
 /* Auth Box Container */
 .auth-box-container {
     display: flex;
@@ -305,10 +289,8 @@ footer p {
     width: 100%;
     position: absolute;
     top: 0;
-    opacity: 0;
     transform: scale(0.95);
     transition: all 0.4s ease;
-    visibility: hidden;
     width: 50%;
 }
 
