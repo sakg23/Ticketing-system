@@ -1,0 +1,149 @@
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <title>Ticketing System</title>
+    <link rel="stylesheet" href="/style.css">
+</head>
+
+<body>
+    <header class="main-header">
+        <div class="container">
+            <h1>My Tickets</h1>
+            <nav>
+                <ul>
+                    <li><a href="/view-tickets">View My Tickets</a></li>
+                    <li><a href="/create-ticket">Create New Ticket</a></li>
+                    <li><a href="/logout">Logout</a></li>
+                </ul>
+            </nav>
+        </div>
+    </header>
+
+    <!-- Existing search field for general filtering -->
+    <input type="text" id="searchInput" onkeyup="filterTable()" placeholder="Search for tickets.." />
+
+    <!-- New dropdown for filtering by status -->
+    <select id="statusSelect" onchange="filterStatus()">
+        <option value="all">All</option>
+        <option value="open">Open</option>
+        <option value="closed">Closed</option>
+    </select>
+
+    <!-- Kontrollera om användaren har några tickets -->
+    <% if (tickets && tickets.length > 0) { %>
+        <table id="ticketTable" class="ticket-table">
+            <thead>
+                <tr>
+                    <th>Title</th>
+                    <th>Description</th>
+                    <th>Status</th>
+                    <th>Category</th>
+                    <th>Attachment</th>
+                    <th>Created At</th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                <% tickets.forEach(ticket => { %>
+                    <tr class="<%= ticket.status === 'closed' ? 'closed-ticket' : '' %>">
+                        <td><%= ticket.title %></td>
+                        <td><%= ticket.description %></td>
+                        <td><%= ticket.status %></td>
+                        <td>
+                            <form action="/update-category/<%= ticket.ticket_id %>" method="POST">
+                                <select name="category">
+                                    <option value="software" <%= ticket.category === 'software' ? 'selected' : '' %>>Software</option>
+                                    <option value="network" <%= ticket.category === 'network' ? 'selected' : '' %>>Network</option>
+                                    <option value="hardware" <%= ticket.category === 'hardware' ? 'selected' : '' %>>Hardware</option>
+                                    <option value="security" <%= ticket.category === 'security' ? 'selected' : '' %>>Security</option>
+                                    <option value="other" <%= ticket.category === 'other' ? 'selected' : '' %>>Other</option>
+                                </select>
+                                <button type="submit">Update</button>
+                            </form>
+                        </td>
+                        <td>
+                            <% if (ticket.attachment) { %>
+                                <a href="/uploads/<%= ticket.attachment %>" download>Download Attachment</a>
+                            <% } else { %>
+                                No attachment
+                            <% } %>
+                        </td>                                              
+                        <td><%= new Date(ticket.created_at).toLocaleString() %></td>
+                        <td>
+                            <!-- Actions: Växla mellan Close och Open beroende på ticket status -->
+                            <% if (ticket.status === 'closed') { %>
+                                <a href="/change-status/<%= ticket.ticket_id %>?status=open" class="btn btn-open">Open Ticket</a>
+                            <% } else { %>
+                                <a href="/change-status/<%= ticket.ticket_id %>?status=closed" class="btn btn-closed">Close Ticket</a>
+                            <% } %>
+                        </td>
+                    </tr>
+                <% }); %>
+            </tbody>            
+        </table>
+    <% } else { %>
+        <p>No tickets found.</p>
+    <% } %>
+
+    <a href="/create-ticket" class="btn">Create New Ticket</a>
+
+    <!-- JavaScript for filtering the table -->
+    <script>
+        // Existing function for general filtering (title, description, category, status)
+        function filterTable() {
+            var input = document.getElementById("searchInput");
+            var filter = input.value.toUpperCase();
+            var table = document.getElementById("ticketTable");
+            var tr = table.getElementsByTagName("tr");
+            
+            for (var i = 1; i < tr.length; i++) {
+                var tdTitle = tr[i].getElementsByTagName("td")[0]; // Title column
+                var tdDescription = tr[i].getElementsByTagName("td")[1]; // Description column
+                var tdStatus = tr[i].getElementsByTagName("td")[2]; // Status column
+                var tdCategory = tr[i].getElementsByTagName("td")[3]; // Category column
+
+                if (tdTitle || tdDescription || tdStatus || tdCategory) {
+                    var txtValueTitle = tdTitle.textContent || tdTitle.innerText;
+                    var txtValueDescription = tdDescription.textContent || tdDescription.innerText;
+                    var txtValueStatus = tdStatus.textContent || tdStatus.innerText;
+                    var txtValueCategory = tdCategory.textContent || tdCategory.innerText;
+
+                    if (txtValueTitle.toUpperCase().indexOf(filter) > -1 ||
+                        txtValueDescription.toUpperCase().indexOf(filter) > -1 ||
+                        txtValueStatus.toUpperCase().indexOf(filter) > -1 ||
+                        txtValueCategory.toUpperCase().indexOf(filter) > -1) {
+                        tr[i].style.display = "";
+                    } else {
+                        tr[i].style.display = "none";
+                    }
+                }
+            }
+        }
+
+        // New function to filter by selected status (open/closed)
+        function filterStatus() {
+            var select = document.getElementById("statusSelect");
+            var filter = select.value.toUpperCase();
+            var table = document.getElementById("ticketTable");
+            var tr = table.getElementsByTagName("tr");
+
+            for (var i = 1; i < tr.length; i++) {
+                var tdStatus = tr[i].getElementsByTagName("td")[4]; // Status column
+
+                if (tdStatus) {
+                    var txtValueStatus = tdStatus.textContent || tdStatus.innerText;
+
+                    // Show rows based on selected filter (open/closed or all)
+                    if (filter === "ALL" || txtValueStatus.toUpperCase() === filter) {
+                        tr[i].style.display = ""; // Show matching rows
+                    } else {
+                        tr[i].style.display = "none"; // Hide non-matching rows
+                    }
+                }
+            }
+        }
+    </script>
+
+</body>
+</header>

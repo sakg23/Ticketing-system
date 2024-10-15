@@ -1,0 +1,123 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="/public/style.css"> <!-- Din CSS-fil -->
+    <title>Login and Signup</title>
+    <header class="main-header">
+        <div class="container">
+            <nav>
+                <ul class="nav-list">
+                    <li><a href="/">Home</a></li>
+                </ul>
+            </nav>
+        </div>
+    </header>
+    <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <meta http-equiv="X-UA-Compatible" content="IE=edge">
+        <!-- <title>Ticketing System</title> -->
+        <link rel="stylesheet" href="/style.css">
+    
+    </head>
+
+    
+    <body>
+        <div class="ticketing-container">    
+            <div class="auth-switch-container">
+                <!-- Switch Controls -->
+                <div class="switch-buttons">
+                    <button id="switch-to-login" class="active">Log In</button>
+                    <button id="switch-to-signup">Sign Up</button>
+                </div>
+    
+                <!-- Auth Boxes -->
+                <div class="auth-box-container">
+                    <!-- Log In Box -->
+                    <div class="auth-box login-box active">
+                        <form action="/login" method="POST">
+                            <div class="input-group">
+                                <label for="email">Email:</label>
+                                <input type="email" id="email" name="email" required>
+                            </div>
+    
+                            <div class="input-group">
+                                <label for="password">Password:</label>
+                                <input type="password" id="password" name="password" required>
+                            </div>
+    
+                            <button class="submit-btn" type="submit">Log In</button>
+                        </form>
+                    </div>
+    
+                    <!-- Sign Up Box -->
+                    <div class="auth-box signup-box">
+                        <form action="/signup" method="POST">
+                            <div class="input-group">
+                                <label for="name">Name:</label>
+                                <input type="text" id="name" name="name" required>
+                            </div>
+    
+                            <div class="input-group">
+                                <label for="email">Email:</label>
+                                <input type="email" id="email" name="email" required>
+                            </div>
+    
+                            <div class="input-group">
+                                <label for="password">Password:</label>
+                                <input type="password" id="password" name="password" required>
+                            </div>
+    
+                            <div class="input-group">
+                                <label for="role">Role:</label>
+                                <select id="role" name="role" onchange="checkRole()">
+                                    <option value="user">User</option>
+                                    <option value="agent">Agent</option>
+                                </select>
+                            </div>
+                            <button class="submit-btn" type="submit">Sign Up</button>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+    
+
+    <!-- JavaScript för att hantera switchen mellan log in och sign up -->
+    <script>
+        const switchToLoginBtn = document.getElementById('switch-to-login');
+        const switchToSignUpBtn = document.getElementById('switch-to-signup');
+        const loginBox = document.querySelector('.login-box');
+        const signUpBox = document.querySelector('.signup-box');
+
+        switchToLoginBtn.addEventListener('click', () => {
+            loginBox.classList.add('active');
+            signUpBox.classList.remove('active');
+            switchToLoginBtn.classList.add('active');
+            switchToSignUpBtn.classList.remove('active');
+        });
+
+        switchToSignUpBtn.addEventListener('click', () => {
+            signUpBox.classList.add('active');
+            loginBox.classList.remove('active');
+            switchToSignUpBtn.classList.add('active');
+            switchToLoginBtn.classList.remove('active');
+        });
+
+        // För att visa eller dölja Agent Secret Word-fältet baserat på vald roll
+        function checkRole() {
+            var role = document.getElementById('role').value;
+            var secretField = document.getElementById('secret-word');
+            if (role === 'agent') {
+                secretField.style.display = 'block';
+            } else {
+                secretField.style.display = 'none';
+            }
+        }
+    </script>
+</body>
+</html>
+<%- include("./partials/footer.ejs") %>

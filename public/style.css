@@ -1,0 +1,565 @@
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+    font-family: 'Arial', sans-serif;
+}
+
+body {
+    background-color: #e8f5f9; 
+    color: #333;
+    line-height: 1.6;
+    font-size: 16px;
+    transition: background-color 0.3s ease;
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+}
+
+body .main-content {
+    position:relative;
+    align-items: center;
+}
+.container {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 0 20px;
+}
+
+/* Huvud-header styling */
+.main-header {
+    background-color: #005f73;
+    color: #fff;
+    padding: 10px 0; /* Minskat padding för att göra headern smalare */
+    text-align: center;
+    width: 100%;
+    max-width: 100%;
+    margin: 0 auto;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    position: sticky;
+    top: 0;
+    z-index: 1000;
+    transition: background-color 0.3s ease;
+    border-radius: 0;
+    margin-bottom: 20px; 
+    height: auto; /* Låt höjden justeras automatiskt beroende på innehåll */
+}
+
+
+
+.main-header:hover {
+    background-color: #0a9396; /* Ljusare blå-grön när man hovrar */
+}
+
+.main-header h1 {
+    font-size: 2.5rem;
+}
+
+.main-header nav {
+    text-align: center;
+    margin-top: 10px;
+}
+
+.main-header nav ul {
+    list-style: none;
+    padding: 0;
+}
+
+.main-header nav ul li {
+    display: inline-block;
+    margin: 0 15px;
+    position: relative;
+    transition: transform 0.3s ease;
+}
+
+.main-header nav ul li:hover {
+    transform: translateY(-3px);
+}
+
+.main-header nav ul li a {
+    color: #fff;
+    text-decoration: none;
+    font-size: 1.2rem;
+    transition: color 0.3s ease;
+}
+
+.main-header nav ul li a:hover {
+    color: #ffdd4a; /* Guldgul färg vid hover */
+}
+
+.main-content {
+    flex-grow: 1;
+    padding: 50px 20px;
+    background-color: #c0c8c1;
+    border-radius: 10px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    display: flex;
+    flex-direction: column;
+    gap: 30px;
+    animation: fadeIn 0.5s ease;
+    margin: 20px auto; /* Centrerar horisontellt */
+    width: 100%;
+    max-width: 1200px; /* Matchar headerns maxbredd */
+}
+
+
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+    }
+    to {
+        opacity: 1;
+    }
+}
+
+/* Section Styling */
+.ticket-section {
+    background-color: #fff;
+    padding: 20px;
+    border-radius: 8px;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    transition: box-shadow 0.3s ease;
+}
+
+.ticket-section:hover {
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
+}
+
+.ticket-section h2 {
+    font-size: 2rem;
+    margin-bottom: 20px;
+    transition: color 0.3s ease;
+}
+
+.ticket-section h2:hover {
+    color: #005f73;
+}
+
+form
+/* Form Styling */
+.ticket-form {
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
+    animation: slideIn 0.5s ease;
+}
+
+@keyframes slideIn {
+    from {
+        transform: translateY(50px);
+        opacity: 0;
+    }
+    to {
+        transform: translateY(0);
+        opacity: 1;
+    }
+}
+
+.ticket-form label {
+    font-size: 1.1rem;
+    font-weight: bold;
+    transition: color 0.3s ease;
+}
+
+.ticket-form label:hover {
+    color: #0a9396;
+}
+
+.ticket-form textarea, 
+.ticket-form select, 
+.ticket-form input[type="file"] {
+    padding: 10px;
+    font-size: 1rem;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    width: 10vw;
+    transition: border 0.3s ease;
+}
+
+.ticket-form textarea:focus, 
+.ticket-form select:focus, 
+.ticket-form input[type="file"]:focus {
+    border-color: #0a9396;
+    outline: none;
+}
+
+.ticket-form button.submit-btn {
+    padding: 10px 20px;
+    background-color: #005f73;
+    color: #fff;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    transition: background-color 0.3s ease, transform 0.3s ease;
+}
+
+.ticket-form button.submit-btn:hover {
+    background-color: #0a9396;
+    transform: scale(1.05);
+}
+
+/* Table Styling */
+table {
+    width: 100%;
+    border-collapse: collapse;
+    animation: tableSlideIn 0.6s ease;
+}
+
+@keyframes tableSlideIn {
+    from {
+        opacity: 0;
+        transform: translateY(50px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+table th, table td {
+    padding: 15px;
+    text-align: left;
+    border-bottom: 1px solid #ddd;
+    transition: background-color 0.3s ease;
+}
+
+table th {
+    background-color: #005f73;
+    color: #fff;
+}
+
+table tr:hover {
+    background-color: #f0f0f0;
+    cursor: pointer;
+}
+
+/* Footer Styling */
+footer {
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    width: 100%;
+    background-color: #005f73;
+    color: #fff;
+    padding: 10px 0; /* Justera padding om det behövs */
+    text-align: center;
+    transition: background-color 0.3s ease;
+    z-index: 1000;
+}
+
+footer:hover {
+    background-color: #0a9396;
+}
+
+footer p {
+    margin: 0;
+    font-size: 0.9rem; /* Minska textstorleken om det behövs */
+}
+
+/* Additional Spacing */
+.container {
+    padding-bottom: 100px; /* Space to prevent content from hiding behind the footer */
+}
+
+/* Switch buttons */
+.switch-buttons {
+    display: flex;
+    justify-content: center;
+    margin-bottom: 20px;
+}
+
+.switch-buttons button {
+    background-color: #007bff;
+    color: #fff;
+    border: none;
+    padding: 10px 20px;
+    font-size: 16px;
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+    width: 25%;
+    outline: none;
+}
+
+.switch-buttons button.active {
+    background-color: #0056b3;
+}
+
+.switch-buttons button:hover {
+    background-color: #0056b3;
+}
+
+/* Auth Box Container */
+.auth-box-container {
+    display: flex;
+    justify-content: center;
+    position: relative;
+    height: 350px; /* Fixad höjd för övergången */
+}
+
+/* Auth Boxes (Login & Signup) */
+.auth-box {
+    background-color:#c0c8c1;
+    border-radius: 8px;
+    padding: 50px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+    width: 100%;
+    position: absolute;
+    top: 0;
+    opacity: 0;
+    transform: scale(0.95);
+    transition: all 0.4s ease;
+    visibility: hidden;
+    width: 50%;
+}
+
+.auth-box.active {
+    opacity: 1;
+    transform: scale(1);
+    visibility: visible;
+}
+
+/* Form fields */
+.auth-box label {
+    font-size: 14px;
+    margin-bottom: 5px;
+    display: block;
+}
+
+.auth-box input, 
+.auth-box select {
+    width: 100%;
+    padding: 10px;
+    margin-bottom: 15px;
+    border: 1px solid #ddd;
+    border-radius: 5px;
+    font-size: 14px;
+}
+/* Submit Button - smaller size */
+.auth-box button {
+    width: 30%; /* Ändra procenten efter önskad bredd */
+    padding: 5px; /* Minska padding för att göra knappen mindre */
+    background-color: #007bff;
+    color: white;
+    border: none;
+    border-radius: 5px;
+    font-size: 14px; /* Minska fontstorleken för att passa en mindre knapp */
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+}
+
+.auth-box button:hover {
+    background-color: #0056b3;
+}
+
+
+/* Styling for the welcome page */
+.welcome-page .main-header {
+    text-align: center;
+    background-color: #c7f9cc;
+    padding: 50px;
+    color: #333;
+}
+
+.welcome-page .main-content {
+    max-width: 800px;
+    margin: 40px auto;
+    padding: 20px;
+    background-color: #fff;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    border-radius: 10px;
+}
+
+.welcome-page .main-content h2 {
+    font-size: 2rem;
+    margin-bottom: 20px;
+}
+
+.welcome-page .main-content p {
+    font-size: 1.2rem;
+    line-height: 1.8;
+}
+
+
+.btn {
+    display: inline-block;
+    padding: 10px 20px;
+    font-size: 16px;
+    font-weight: bold;
+    text-align: center;
+    color: white;
+    background-color: #007bff;
+    border: none;
+    border-radius: 5px;
+    text-decoration: none;
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+}
+
+.btn:hover {
+    background-color: #0056b3;
+}
+
+
+form {
+    display: flex;
+    flex-direction: column;
+    gap: 15px; /* Mellanrum mellan form-element */
+    margin-top: 20px;
+    align-items: center;
+}
+
+/* Etiketter för formulärelement */
+form label {
+    font-size: 1.2rem; /* Storlek på texten för etiketterna */
+    font-weight: bold; /* Gör texten fet */
+    color: #333; /* Mörk färg för att kontrastera mot bakgrunden */
+}
+
+/* Textfält och textarea styling */
+form input, form textarea {
+    padding: 10px;
+    border: 1px solid #ddd; /* Ljusgrå kant runt fälten */
+    border-radius: 4px; /* Lätt rundning på hörnen */
+    font-size: 1rem; /* Standardstorlek för texten */
+    width: 18vw;
+    transition: border 0.3s ease;
+}
+
+/* Fokuseffekt på fält - när användaren klickar in */
+form input:focus, form textarea:focus {
+    border-color: #007bff; /* Blå kant när man klickar i fältet */
+    outline: none; /* Ta bort standardbrowserns outline */
+}
+
+/* Filuppladdningsfält */
+form input[type="file"] {
+    padding: 10px;
+    font-size: 1rem;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    width: 18vw;
+    transition: border 0.3s ease;
+    align-items: center;
+    position: relative;
+}
+
+/* Knapp för att skapa en ny ticket */
+form button[type="submit"] {
+    padding: 10px 20px;
+    background-color: #007bff; /* Blå bakgrund */
+    color: white; /* Vit text på knappen */
+    border: none;
+    border-radius: 4px;
+    font-size: 1.1rem;
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+}
+
+/* Hover-effekt för submit-knappen */
+form button[type="submit"]:hover {
+    background-color: #0056b3; /* Mörkare blå färg när man hovrar */
+}
+
+/* ------------------- Tabell-styling ------------------- */
+/* Grundläggande tabell-styling */
+table {
+    width: 100%;
+    border-collapse: collapse; /* Ta bort mellanrum mellan celler */
+    margin-top: 20px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1); /* Lätt skugga runt hela tabellen */
+    animation: tableSlideIn 0.6s ease; /* Liten animation när tabellen visas */
+}
+
+/* Animation för tabellen */
+@keyframes tableSlideIn {
+    from {
+        opacity: 0;
+        transform: translateY(50px); /* Tabellen kommer upp från botten */
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0); /* Tabellen återgår till normal position */
+    }
+}
+
+/* Styling för celler och rubriker i tabellen */
+table th, table td {
+    padding: 15px;
+    text-align: left; /* Vänsterjustera texten */
+    border-bottom: 1px solid #ddd; /* Ljusgrå kant under varje cell */
+    transition: background-color 0.3s ease; /* Smidig övergång vid bakgrundsförändring */
+}
+
+/* Styling för tabellhuvud */
+table th {
+    background-color: #007bff; /* Blå bakgrund för rubriker */
+    color: #fff; /* Vit text på rubrikerna */
+}
+
+/* Hover-effekt för rader i tabellen */
+table tr:hover {
+    background-color: #f1f1f1; /* Ljus bakgrundsfärg när man hovrar över en rad */
+    cursor: pointer; /* Ändra markören till en pekare */
+}
+
+/* Styling för länkade bilagor i tabellen */
+table a {
+    color: #007bff; /* Blå länkfärg */
+    text-decoration: none; /* Ta bort understrykning */
+    transition: color 0.3s ease; /* Smidig färgövergång */
+}
+
+/* Hover-effekt för länkar */
+table a:hover {
+    color: #0056b3; /* Mörkare blå när man hovrar */
+}
+
+/* Stil för sökfältet */
+#searchInput {
+    width: 100%;
+    padding: 12px;
+    margin-bottom: 12px;
+    border: 1px solid #ddd;
+}
+
+/* Stil för tabellen */
+#ticketTable {
+    width: 100%;
+    border-collapse: collapse;
+}
+
+#ticketTable th, #ticketTable td {
+    padding: 12px;
+    text-align: left;
+    border-bottom: 1px solid #ddd;
+}
+
+#ticketTable tr:hover {
+    background-color: #f1f1f1;
+}
+
+.closed-ticket {
+    background-color: #ffcccc; /* Light red background for closed tickets */
+}
+
+
+/* btn styling för status*/
+.btn {
+    padding: 10px 20px;
+    border: none;
+    cursor: pointer;
+    font-size: 14px;
+    border-radius: 5px;
+}
+
+/* Grön för öppna biljetter */
+.btn-open {
+    background-color: green;
+    color: white;
+}
+
+/* Röd för stängda biljetter */
+.btn-closed {
+    background-color: red;
+    color: white;
+}

@@ -1,0 +1,162 @@
+<%- include("./partials/header.ejs") %>
+<header class="user-dashboard">
+    <div class="main-header">
+        <h1>Welcome, <%= userName %>!</h1>
+        <nav>
+            <ul>
+                <li><a href="/view-all-tickets">View All Tickets</a></li>
+                <li><a href="/view-all-users">View All Users</a></li>
+                <li><a href="/logout">Logout</a></li>
+            </ul>
+        </nav>
+    </div>
+
+    <!-- Knapp för att öppna/stänga sektionen -->
+    <!-- <button id="toggleButton" onclick="toggleSection()">Toggle Tickets Section</button> -->
+
+    <section id="ticketSection" class="ticket-section">
+        <h2>All Tickets</h2>
+        <p>As an agent, you have access to view and manage all tickets.</p>
+
+        <!-- Sökfält för att filtrera tickets -->
+        <input type="text" id="searchInput" onkeyup="filterTable()" placeholder="Search for tickets.." />
+        
+        <!-- New dropdown for filtering by status -->
+        <select id="statusSelect" onchange="filterStatus()">
+            <option value="all">All</option>
+            <option value="open">Open</option>
+            <option value="closed">Closed</option>
+        </select>
+
+        <!-- Tabell för tickets -->
+        <table id="ticketTable" border="1" cellpadding="10" cellspacing="0">
+            <thead>
+                <tr>
+                    <th>Ticket ID</th>
+                    <th>User Name</th>
+                    <th>Title</th>
+                    <th>Description</th>
+                    <th>Status</th>
+                    <th>Category</th>
+                    <th>Attachment</th>
+                    <th>Created At</th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                <% if (tickets && tickets.length > 0) { %>
+                    <% tickets.forEach(ticket => { %>
+                        <tr class="<%= ticket.status === 'closed' ? 'closed-ticket' : '' %>">
+                            <td><%= ticket.ticket_id %></td>
+                            <td><%= ticket.created_by %></td>
+                            <td><%= ticket.title %></td>
+                            <td><%= ticket.description %></td>
+                            <td><%= ticket.status %></td>
+                            <td>
+                                <form action="/update-category/<%= ticket.ticket_id %>" method="POST">
+                                    <select name="category">
+                                        <option value="software" <%= ticket.category === 'software' ? 'selected' : '' %>>Software</option>
+                                        <option value="network" <%= ticket.category === 'network' ? 'selected' : '' %>>Network</option>
+                                        <option value="hardware" <%= ticket.category === 'hardware' ? 'selected' : '' %>>Hardware</option>
+                                        <option value="security" <%= ticket.category === 'security' ? 'selected' : '' %>>Security</option>
+                                        <option value="other" <%= ticket.category === 'other' ? 'selected' : '' %>>Other</option>
+                                    </select>
+                                    <button type="submit">Update</button>
+                                </form>
+                            </td>
+                            <td><%= new Date(ticket.created_at).toLocaleString() %></td>
+                            <td>
+                                <% if (ticket.attachment) { %>
+                                    <a href="/uploads/<%= ticket.attachment %>" download>Download Attachment</a>
+                                <% } else { %>
+                                    No attachment
+                                <% } %>
+                            </td>                            
+                            <td>
+                                <!-- Växla mellan Close/Open baserat på status -->
+                                <% if (ticket.status === 'closed') { %>
+                                    <a href="/change-status/<%= ticket.ticket_id %>?status=open" class="btn btn-open">Open Ticket</a>
+                                <% } else { %>
+                                    <a href="/change-status/<%= ticket.ticket_id %>?status=closed" class="btn btn-closed">Close Ticket</a>
+                                <% } %>
+                            </td>
+                        </tr>
+                    <% }) %>
+                <% } else { %>
+                    <tr>
+                        <td colspan="8">No tickets available at the moment.</td>
+                    </tr>
+                <% } %>
+            </tbody>
+        </table>
+    </section>
+
+    <!-- JavaScript för att toggla sektionen och filtrera tabellen -->
+    <script>
+        // function toggleSection() {
+        //     var section = document.getElementById("ticketSection");
+        //     var button = document.getElementById("toggleButton");
+        //     if (section.style.display === "none" || section.style.display === "") {
+        //         section.style.display = "block";
+        //         button.textContent = "Hide Tickets Section";
+        //     } else {
+        //         section.style.display = "none";
+        //         button.textContent = "Show Tickets Section";
+        //     }
+        // }
+
+        // Existing general filter function (searches title, description, category, and status)
+        function filterTable() {
+            var input = document.getElementById("searchInput");
+            var filter = input.value.toUpperCase();
+            var table = document.getElementById("ticketTable");
+            var tr = table.getElementsByTagName("tr");
+
+            for (var i = 1; i < tr.length; i++) {
+                var tdTitle = tr[i].getElementsByTagName("td")[2];
+                var tdDescription = tr[i].getElementsByTagName("td")[3];
+                var tdStatus = tr[i].getElementsByTagName("td")[4];
+                var tdCategory = tr[i].getElementsByTagName("td")[5].getElementsByTagName("select")[0];
+
+                if (tdTitle || tdDescription || tdStatus || tdCategory) {
+                    var txtValueTitle = tdTitle.textContent || tdTitle.innerText;
+                    var txtValueDescription = tdDescription.textContent || tdDescription.innerText;
+                    var txtValueStatus = tdStatus.textContent || tdStatus.innerText;
+                    var txtValueCategory = tdCategory.value;
+
+                    if (txtValueTitle.toUpperCase().indexOf(filter) > -1 ||
+                        txtValueDescription.toUpperCase().indexOf(filter) > -1 ||
+                        txtValueStatus.toUpperCase().indexOf(filter) > -1 ||
+                        txtValueCategory.toUpperCase().indexOf(filter) > -1) {
+                        tr[i].style.display = "";
+                    } else {
+                        tr[i].style.display = "none";
+                    }
+                }
+            }
+        }
+
+        // New function for filtering by status (open/closed/all)
+        function filterStatus() {
+            var select = document.getElementById("statusSelect");
+            var filter = select.value.toUpperCase();
+            var table = document.getElementById("ticketTable");
+            var tr = table.getElementsByTagName("tr");
+
+            for (var i = 1; i < tr.length; i++) {
+                var tdStatus = tr[i].getElementsByTagName("td")[4]; // Status column
+
+                if (tdStatus) {
+                    var txtValueStatus = tdStatus.textContent || tdStatus.innerText;
+
+                    // Show rows based on selected filter (open/closed or all)
+                    if (filter === "ALL" || txtValueStatus.toUpperCase() === filter) {
+                        tr[i].style.display = ""; // Show matching rows
+                    } else {
+                        tr[i].style.display = "none"; // Hide non-matching rows
+                    }
+                }
+            }
+        }
+    </script>
+</header>

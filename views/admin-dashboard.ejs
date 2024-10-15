@@ -1,0 +1,47 @@
+<!-- admin-dashboard.ejs -->
+<h2>Admin - Create a new account</h2>
+<form action="/signup" method="POST">
+    <div class="input-group">
+        <label for="name">Name:</label>
+        <input type="text" id="name" name="name" required>
+    </div>
+
+    <div class="input-group">
+        <label for="email">Email:</label>
+        <input type="email" id="email" name="email" required>
+    </div>
+
+    <div class="input-group">
+        <label for="password">Password:</label>
+        <input type="password" id="password" name="password" required>
+    </div>
+
+    <div class="input-group">
+        <label for="role">Role:</label>
+        <select id="role" name="role" onchange="checkRole()">
+            <option value="user">User</option>
+            <option value="agent">Agent</option>
+        </select>
+    </div>
+
+    <!-- Agent Secret Word Field -->
+    <div class="input-group" id="secret-word" style="display:none;">
+        <label for="secret">Agent Secret Word:</label>
+        <input type="text" id="secret" name="secret">
+    </div>
+
+    <button class="submit-btn" type="submit">Create Account</button>
+</form>
+
+<script>
+    // Show/Hide the secret word input based on role selection
+    function checkRole() {
+        var role = document.getElementById('role').value;
+        var secretField = document.getElementById('secret-word');
+        if (role === 'agent') {
+            secretField.style.display = 'block';
+        } else {
+            secretField.style.display = 'none';
+        }
+    }
+</script>

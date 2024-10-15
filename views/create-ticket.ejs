@@ -1,0 +1,45 @@
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <title>Ticketing System</title>
+    <link rel="stylesheet" href="/style.css">
+
+    <header class="main-header">
+        <div class="container">
+            <h1>Welcome, <%= userName %>!</h1>
+            <nav>
+                <ul>
+                    <li><a href="/view-tickets">View My Tickets</a></li>
+                    <li><a href="/create-ticket">Create New Ticket</a></li>
+                    <li><a href="/logout">Logout</a></li>
+                </ul>
+            </nav>
+        </div>
+    </header>
+
+<body>
+    <main class="main-content">
+<form action="/create-ticket" method="POST" enctype="multipart/form-data">
+    <label for="title">Ticket Title:</label>
+    <input type="text" id="title" name="title" required>
+
+    <label for="description">Ticket Description:</label>
+    <textarea id="description" name="description" required></textarea>
+
+    <label for="category">Category:</label>
+    <select name="category" required>
+        <option value="software">Software</option>
+        <option value="network">Network</option>
+        <option value="hardware">Hardware</option>
+        <option value="security">Security</option>
+        <option value="other">Other</option>
+    </select>
+
+    <label for="attachment">Attach File:</label>
+    <input type="file" name="attachment" accept="image/*,application/pdf">
+
+    <button type="submit">Create Ticket</button>
+</form>
+</body>
+</main>
