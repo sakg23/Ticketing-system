@@ -298,3 +298,55 @@ BEGIN
     END IF;
 END $$
 DELIMITER ;
+
+--user adds a comment
+DELIMITER $$
+
+CREATE PROCEDURE AddUserComment(
+    IN p_ticket_id INT,
+    IN p_user_id INT,
+    IN p_content TEXT
+)
+BEGIN
+    INSERT INTO comments (ticket_id, user_id, content, sender_role)
+    VALUES (p_ticket_id, p_user_id, p_content, 'user');
+END $$
+
+DELIMITER ;
+
+-- agent adds a comment
+DELIMITER $$
+
+CREATE PROCEDURE AddAgentComment(
+    IN p_ticket_id INT,
+    IN p_agent_id INT,
+    IN p_content TEXT
+)
+BEGIN
+    INSERT INTO comments (ticket_id, user_id, content, sender_role)
+    VALUES (p_ticket_id, p_agent_id, p_content, 'agent');
+END $$
+
+DELIMITER ;
+
+--fetch comments
+DELIMITER $$
+
+CREATE PROCEDURE GetTicketComments(
+    IN p_ticket_id INT
+)
+BEGIN
+    SELECT 
+        c.comment_id,
+        c.ticket_id,
+        c.content,
+        c.sender_role,
+        u.username AS sender_name,
+        c.created_at
+    FROM comments c
+    JOIN users u ON c.user_id = u.user_id
+    WHERE c.ticket_id = p_ticket_id
+    ORDER BY c.created_at ASC;
+END $$
+
+DELIMITER ;

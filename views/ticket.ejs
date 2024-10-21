@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="/public/style.css"> <!-- Din CSS-fil -->
+    <title>Ticket Details</title>
+    <header class="main-header">
+        <div class="container">
+            <nav>
+                <ul class="nav-list">
+                </ul>
+            </nav>
+        </div>
+    </header>
+    <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <meta http-equiv="X-UA-Compatible" content="IE=edge">
+        <link rel="stylesheet" href="/style.css">
+    
+    </head>
+
+<div class="ticket-details-container">
+    <h1>Ticket Details</h1>
+    <div class="ticket-details">
+        <p><strong>Title:</strong> <span class="ticket-info"><%= ticket.title %></span></p>
+        <p><strong>Description:</strong> <span class="ticket-info"><%= ticket.description %></span></p>
+        <p><strong>Status:</strong> <span class="ticket-info <%= ticket.status === 'open' ? 'status-open' : 'status-closed' %>">
+            <%= ticket.status %>
+        </span></p>
+        <p><strong>Category:</strong> <span class="ticket-info"><%= ticket.category %></span></p>
+        <p><strong>Created By:</strong> <span class="ticket-info"><%= ticket.created_by %></span></p>
+        <p><strong>Created At:</strong> <span class="ticket-info"><%= new Date(ticket.created_at).toLocaleString() %></span></p>
+
+        <% if (ticket.attachment) { %>
+            <p><strong>Attachment:</strong> <a class="ticket-attachment" href="/uploads/<%= ticket.attachment %>">Open</a></p>
+        <% } else { %>
+            <p class="ticket-no-attachment">No attachments available</p>
+        <% } %>
+    </div>
+</div>

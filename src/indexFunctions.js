@@ -116,7 +116,7 @@ const handleFileUpload = async (req) => {
 
     // Insert file attachment into the database
     const attachmentSql = 'INSERT INTO attachments (ticket_id, file_name) VALUES (?, ?)';
-    await db.query(attachmentSql, [ticketId, file.filename]);
+    await db.query(attachmentSql, [ticketId, file.filename, file.originalname]);
 
     return { ticketId, fileName: file.filename };
 };

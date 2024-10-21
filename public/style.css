@@ -369,7 +369,6 @@ footer p {
     font-weight: bold;
     text-align: center;
     color: white;
-    background-color: #007bff;
     border: none;
     border-radius: 5px;
     text-decoration: none;
@@ -428,11 +427,11 @@ form input[type="file"] {
 /* Knapp för att skapa en ny ticket */
 form button[type="submit"] {
     padding: 10px 20px;
-    background-color: #007bff; /* Blå bakgrund */
+    background-color: #0056b3; /* Blå bakgrund */
     color: white; /* Vit text på knappen */
     border: none;
     border-radius: 4px;
-    font-size: 1.1rem;
+    font-size: 15px;
     cursor: pointer;
     transition: background-color 0.3s ease;
 }
@@ -530,8 +529,9 @@ table a:hover {
     padding: 10px 20px;
     border: none;
     cursor: pointer;
-    font-size: 14px;
+    font-size: 15px;
     border-radius: 5px;
+    background-color:#0056b3
 }
 
 /* Grön för öppna biljetter */
@@ -545,3 +545,110 @@ table a:hover {
     background-color: red;
     color: white;
 }
+
+
+
+.signup-button {
+    display: inline-block;
+    padding: 5px 10px;    /* Smaller padding for a smaller button */
+    background-color: #007BFF;
+    color: white;
+    text-decoration: none;
+    font-size: 12px;      /* Smaller font size */
+    border-radius: 3px;   /* Slightly rounded corners */
+    transition: background-color 0.3s ease;
+    position: absolute;
+    right: 10px;      /* Distance from the right edge of the page */
+    
+
+}
+
+.signup-button:hover {
+    background-color: #0056b3;
+}
+
+/* Styla huvudcontainern för biljettdetaljer */
+.ticket-details-container {
+    max-width: 800px;
+    margin: 0 auto;
+    padding: 20px;
+    background-color: #f9f9f9;
+    border-radius: 10px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+}
+
+/* Rubriken för biljettdetaljer */
+.ticket-details-container h1 {
+    font-size: 2em;
+    margin-bottom: 20px;
+    text-align: center;
+    color: #333;
+}
+
+/* Varje rad med information */
+.ticket-details p {
+    font-size: 1.1em;
+    margin: 10px 0;
+    line-height: 1.5;
+    color: #555;
+}
+
+/* Styla själva värdet av varje detalj */
+.ticket-info {
+    color: #555555;
+}
+
+/* Öppna status */
+.status-open {
+    color: green;
+    font-weight: bold;
+}
+
+/* Stängd status */
+.status-closed {
+    color: red;
+    font-weight: bold;
+}
+
+/* Länk för att ladda ner bilagor */
+.ticket-attachment {
+    color: #007bff;
+    text-decoration: none;
+}
+
+.ticket-attachment:hover {
+    text-decoration: underline;
+}
+
+/* Text för när det inte finns några bilagor */
+.ticket-no-attachment {
+    font-style: italic;
+    color: #999;
+}
+
+/* Anpassa om du vill lägga till mer padding runt biljettdetaljerna */
+.ticket-details {
+    padding: 15px;
+    background-color: #fff;
+    border-radius: 8px;
+}
+
+.btn-back-simple {
+    display: inline-block;
+    padding: 8px 15px;
+    background-color: #f0f0f0; /* Ljusgrå bakgrund */
+    color: #333; /* Mörkgrå text */
+    text-decoration: none;
+    border: 1px solid #ccc; /* Tunn grå kant */
+    border-radius: 4px; /* Liten avrundning av hörnen */
+    font-size: 14px;
+    margin-top: 15px; /* Litet avstånd ovanför knappen */
+    transition: background-color 0.3s ease, color 0.3s ease; /* Enkel övergång för hover */
+    width: 10%;
+}
+
+.btn-back-simple:hover {
+    background-color: #e0e0e0; /* Lite mörkare grå bakgrund vid hover */
+    color: #000; /* Mörkare text vid hover */
+}
+

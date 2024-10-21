@@ -3,11 +3,13 @@
 <div class="main-header">
     <h1>Welcome, <%= userName %>!</h1>
     <nav>
-        <ul>
-            <li><a href="/view-all-tickets">View All Tickets</a></li>
-            <li><a href="/view-all-users">View All Users</a></li>
-            <li><a href="/logout">Logout</a></li>
-        </ul>
+            <ul>
+                    <li><a href="/admin-view-all-tickets">View All Tickets</a></li>
+                    <li><a href="/admin-view-all-users">View All Users</a></li>
+                    <li><a href="/login">log in </a></li>
+                    <li><a href="/logout">Logout</a></li>
+                    <li><a href="/signup">Create account</a></li>
+            </ul>
     </nav>
 </div>
 
@@ -38,11 +40,9 @@
                 <th>Description</th>
                 <th>Status</th>
                 <th>Category</th>
-                <th>Attachment</th>
                 <th>Created At</th>
-                <th>Actions</th>
-                <th>View Ticket</th>
-                <th>Comments</th>
+                <th>Attachment</th>
+                <th>View Ticket</th> 
             </tr>
         </thead>
         <tbody>
@@ -54,34 +54,13 @@
                         <td><%= ticket.title %></td>
                         <td><%= ticket.description %></td>
                         <td><%= ticket.status %></td>
-                        <td>
-                            <form action="/update-category/<%= ticket.ticket_id %>" method="POST">
-                                <select name="category">
-                                    <% categories.forEach(function(category) { %>
-                                        <option value="<%= category.category_name %>" <%= ticket.category === category.category_name ? 'selected' : '' %>>
-                                            <%= category.category_name %>
-                                        </option>
-                                    <% }) %>
-                                </select>
-                                <a href="/add-category" class="btn btn-primary">Add New Category</a>
-                                <button type="submit">Update</button>
-                            </form>
-                        </td>
-                        
+                        <td><%= ticket.category %></td> <!-- Category as plain text -->
                         <td><%= new Date(ticket.created_at).toLocaleString() %></td>
                         <td>
                             <% if (ticket.attachment) { %>
-                                <a href="/uploads/<%= ticket.attachment %>" download="<%= ticket.original_name %>">Download Attachment</a>
+                                <a href="/uploads/<%= ticket.attachment %>" download>Download Attachment</a>
                             <% } else { %>
                                 No attachment
-                            <% } %>
-                        </td>                            
-                        <td>
-                            <!-- Växla mellan Close/Open baserat på status -->
-                            <% if (ticket.status === 'closed') { %>
-                                <a href="/change-status/<%= ticket.ticket_id %>?status=open" class="btn btn-open">Open Ticket</a>
-                            <% } else { %>
-                                <a href="/change-status/<%= ticket.ticket_id %>?status=closed" class="btn btn-closed">Close Ticket</a>
                             <% } %>
                         </td>
                         <td>
@@ -95,7 +74,7 @@
                     <td colspan="8">No tickets available at the moment.</td>
                 </tr>
             <% } %>
-        </tbody>
+        </tbody>        
     </table>
 </section>
         <script>

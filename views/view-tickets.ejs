@@ -53,22 +53,22 @@
                         <td>
                             <form action="/update-category/<%= ticket.ticket_id %>" method="POST">
                                 <select name="category">
-                                    <option value="software" <%= ticket.category === 'software' ? 'selected' : '' %>>Software</option>
-                                    <option value="network" <%= ticket.category === 'network' ? 'selected' : '' %>>Network</option>
-                                    <option value="hardware" <%= ticket.category === 'hardware' ? 'selected' : '' %>>Hardware</option>
-                                    <option value="security" <%= ticket.category === 'security' ? 'selected' : '' %>>Security</option>
-                                    <option value="other" <%= ticket.category === 'other' ? 'selected' : '' %>>Other</option>
+                                    <% categories.forEach(function(category) { %>
+                                        <option value="<%= category.category_name %>" <%= ticket.category === category.category_name ? 'selected' : '' %>>
+                                            <%= category.category_name %>
+                                        </option>
+                                    <% }) %>
                                 </select>
                                 <button type="submit">Update</button>
                             </form>
-                        </td>
+                        </td>                                           
                         <td>
                             <% if (ticket.attachment) { %>
                                 <a href="/uploads/<%= ticket.attachment %>" download>Download Attachment</a>
                             <% } else { %>
                                 No attachment
                             <% } %>
-                        </td>                                              
+                        </td>                                                 
                         <td><%= new Date(ticket.created_at).toLocaleString() %></td>
                         <td>
                             <!-- Actions: Växla mellan Close och Open beroende på ticket status -->
