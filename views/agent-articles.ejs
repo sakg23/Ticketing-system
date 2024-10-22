@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="/public/style.css"> <!-- Din CSS-fil -->
+    <title>Login</title>
+    <header class="main-header">
+        <div class="container">
+            <nav>
+                <ul>
+                    <li><a href="/agent-articles">Articles</a></li>
+                    <li><a href="/view-all-tickets">View All Tickets</a></li>
+                    <li><a href="/view-all-users">View All Users</a></li>
+                    <li><a href="/logout">Logout</a></li>
+                </ul>
+            </nav>
+        </div>
+    </header>
+    <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <meta http-equiv="X-UA-Compatible" content="IE=edge">
+        <!-- <title>Ticketing System</title> -->
+        <link rel="stylesheet" href="/articl.css">
+    
+    </head>
+
+
+<section class="article-section">
+    <h2>Create a New Article</h2>
+    <form class="article-form" action="/agent-articles/create" method="POST">
+        <label for="title">Title:</label>
+        <input type="text" id="title" name="title" required>
+
+        <label for="content">Content:</label>
+        <textarea id="content" name="content" rows="5" required></textarea>
+
+        <button type="submit">Post Article</button>
+    </form>
+</section>
+
+<section class="article-section">
+    <h2>Articles</h2>
+    <ul>
+        <% articles.forEach(article => { %>
+            <li>
+                <h3><a href="/agent-article/<%= article.article_id %>"><%= article.title %></a></h3>
+                <p><%= article.content.substring(0, 150) %>...</p>
+                <p>Published by <strong><%= article.created_by %></strong> on <%= new Date(article.created_at).toDateString() %></p>
+            </li>
+        <% }) %>
+    </ul>
+</section>
+
+<footer>
+    <p>Logged in as: <%= userName %></p>
+    <a href="/logout">Logout</a>
+</footer>

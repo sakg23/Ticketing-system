@@ -1,0 +1,48 @@
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <title>Ticketing System</title>
+    <link rel="stylesheet" href="/style.css">
+</head>
+
+<body>
+    <header class="main-header">
+        <div class="container">
+            <h1>My Tickets</h1>
+            <nav>
+                <ul>
+                    <li><a href="/view-tickets">View My Tickets</a></li>
+                    <li><a href="/create-ticket">Create New Ticket</a></li>
+                    <li><a href="/logout">Logout</a></li>
+                </ul>
+            </nav>
+        </div>
+    </header>
+        <!-- List of existing comments -->
+        <div class="comments-section">
+            <h2>Comments:</h2>
+            <div class="comments-list">  <!-- Container for all comments -->
+                <% if (comments.length > 0) { %>
+                    <% comments.forEach(comment => { %>
+                        <div class="comment">  <!-- Each comment -->
+                            <p><strong><%= comment.sender_name %> (<%= comment.sender_role %>):</strong> <%= comment.content %></p>
+                            <p><small>Posted on: <%= new Date(comment.created_at).toLocaleString() %></small></p>
+                        </div>
+                    <% }) %>
+                <% } else { %>
+                    <p>No comments available.</p>
+                <% } %>
+            </div>
+        </div>
+
+        <!-- Form for adding a new comment -->
+        <div class="add-comment-section">
+            <h2>Add a Comment:</h2>
+            <form action="/add-comment/<%= ticket_id %>" method="POST">
+                <textarea name="content" required placeholder="Write your comment here..."></textarea>
+                <button type="submit">Submit Comment</button>
+            </form>
+        </div>
+</body>
+</html>

@@ -58,19 +58,33 @@ CREATE TABLE comments (
     ticket_id INT,
     user_id INT,
     content TEXT NOT NULL,
+    sender_role ENUM('user', 'agent', 'Admin'),
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     FOREIGN KEY (ticket_id) REFERENCES tickets(ticket_id) ON DELETE CASCADE,
     FOREIGN KEY (user_id) REFERENCES users(user_id) ON DELETE CASCADE
 );
 
+
 -- Skapa tabell 5: knowledgeBase
-CREATE TABLE knowledgeBase (
+-- Tabell för knowledge base
+CREATE TABLE IF NOT EXISTS knowledgeBase (
     article_id INT AUTO_INCREMENT PRIMARY KEY,
     title VARCHAR(255) NOT NULL,
     content TEXT NOT NULL,
-    created_by INT,
+    created_by INT,  -- Skapad av agent
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     FOREIGN KEY (created_by) REFERENCES users(user_id) ON DELETE SET NULL
+);
+
+
+CREATE TABLE IF NOT EXISTS article_comments (
+    comment_id INT AUTO_INCREMENT PRIMARY KEY,
+    article_id INT,
+    user_id INT,  -- Kommentaren kommer från en agent
+    content TEXT NOT NULL,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (article_id) REFERENCES knowledgeBase(article_id) ON DELETE CASCADE,
+    FOREIGN KEY (user_id) REFERENCES users(user_id) ON DELETE CASCADE
 );
 
 
@@ -92,6 +106,37 @@ CREATE TABLE categories (
 -- Insert default categories
 INSERT INTO categories(category_name)
 VALUES ('software'), ('network'), ('hardware'), ('security'), ('other');
+
+DELIMITER $$
+CREATE PROCEDURE CreateUser (
+    IN p_username VARCHAR(255),
+    IN p_password VARCHAR(255),
+    IN p_email VARCHAR(255),
+    IN p_role ENUM('user', 'agent'),
+    IN p_department VARCHAR(255),
+    IN p_creator_role ENUM('Admin', 'user', 'agent')  -- Valid ENUM values only
+)
+BEGIN
+    DECLARE existing_user_count INT;
+
+    -- Only Admin can create new users
+    IF p_creator_role != 'Admin' THEN
+        SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'Only Admin can create new users';
+    END IF;
+
+    -- Check if the user with the same email already exists
+    SELECT COUNT(*) INTO existing_user_count FROM users WHERE email = p_email;
+
+    IF existing_user_count > 0 THEN
+        SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'User with this email already exists';
+    ELSE
+        -- Insert into users table
+        INSERT INTO users (username, password, email, role, department)
+        VALUES (p_username, p_password, p_email, p_role, p_department);
+    END IF;
+END$$
+DELIMITER ;
+
 
 -- Stored procedure for admin login
 DELIMITER $$
@@ -143,36 +188,7 @@ END;
 //
 DELIMITER ;
 
--- Stored procedure for user creation (updated)
-DELIMITER $$
-CREATE PROCEDURE CreateUser (
-    IN p_username VARCHAR(255),
-    IN p_password VARCHAR(255),
-    IN p_email VARCHAR(255),
-    IN p_role ENUM('user', 'agent'),
-    IN p_department VARCHAR(255),
-    IN p_creator_role ENUM('Admin', 'user', 'agent')
-)
-BEGIN
-    DECLARE existing_user_count INT;
 
-    -- Only admin can create new users
-    IF p_creator_role != 'Admin' THEN
-        SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'Only Admin can create new users';
-    END IF;
-
-    -- Check if the user with the same email already exists
-    SELECT COUNT(*) INTO existing_user_count FROM users WHERE email = p_email;
-
-    IF existing_user_count > 0 THEN
-        SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'User with this email already exists';
-    ELSE
-        -- Insert into users table
-        INSERT INTO users (username, password, email, role, department)
-        VALUES (p_username, p_password, p_email, p_role, p_department);
-    END IF;
-END$$
-DELIMITER ;
 
 -- Stored procedure for ticket creation
 DELIMITER $$
@@ -350,3 +366,17 @@ BEGIN
 END $$
 
 DELIMITER ;
+
+
+CREATE TABLE notifications (
+    notification_id INT AUTO_INCREMENT PRIMARY KEY,
+    user_id INT NOT NULL,
+    ticket_id INT NOT NULL,
+    message TEXT NOT NULL,
+    is_read BOOLEAN DEFAULT FALSE,  -- To track if the user has read the notification
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (user_id) REFERENCES users(user_id) ON DELETE CASCADE,
+    FOREIGN KEY (ticket_id) REFERENCES tickets(ticket_id) ON DELETE CASCADE
+);
+
+

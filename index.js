@@ -34,8 +34,9 @@ app.use(session({
     secret: 'AGENT99:00',
     resave: false,
     saveUninitialized: true,
-    cookie: { secure: false } // Använd true om du använder HTTPS
+    cookie: { secure: process.env.NODE_ENV === 'production', httpOnly: true } // Secure cookie settings
 }));
+
 
 app.use(express.urlencoded({ extended: true }));
 app.use(express.static('public'));
@@ -52,77 +53,41 @@ app.get('/', (req, res) => {
     res.render('index.ejs');
 });
 
-app.get('/signup', isAuthenticated, (req, res) => {
-    console.log('entered the route for the signup'); // Debug statement to confirm the route is triggered
-
-    if (req.session.user.role !== 'Admin') {
-        return res.redirect('/');  // If not an admin, redirect to the homepage
-    }
-
-    res.render('signup.ejs', { userName: req.session.user.username });
+app.get('/signup', (req, res) => {
+    res.render('signup.ejs');
 });
-
 app.post('/signup', async (req, res) => {
-    console.log('Entered signup route');  // Initial debug statement
+    console.log('Entered signup route');
 
-    // Debug: Log the incoming request body
-    console.log('Request body:', req.body);
-
-    const { name, email, password, department, role } = req.body;
-
-    // Debug: Log the session data
-    console.log('Session data:', req.session);
-
-    // Ensure req.session.user exists
-    if (!req.session.user) {
-        console.log('No user session found, redirecting to home');
-        return res.redirect('/');
-    }
-
-    // Debug: Log the role of the session user
-    console.log('Session user role:', req.session.user.role);
-
-    if (req.session.user.role !== 'Admin') {
-        console.log('User is not an Admin, redirecting to home');
-        return res.redirect('/');  // Redirect to homepage if not admin
-    }
+    const { name, email, password, department } = req.body;
 
     try {
         console.log('Signup request received, hashing password...');
-
-        // Hash the password
-        const hashedPassword = await bcrypt.hash(password, 10); // Hashing the password
+        const hashedPassword = await bcrypt.hash(password, 10);
         console.log('Password hashed successfully:', hashedPassword);
 
-        // Debug: Log the SQL query and parameters before executing
-        console.log('Preparing to call stored procedure CreateUser with parameters:', {
-            name, hashedPassword, email, role, department, creatorRole: req.session.user.role
-        });
+        const role = 'user';  // Force role to 'user'
+        const creatorRole = 'Admin';  // Assuming the creator is an Admin
 
-        // Use the updated stored procedure to create a new user
+        // Prepare and execute the SQL query to insert the new user
         const db = await connectToDatabase();
-        let sql = 'CALL CreateUser(?, ?, ?, ?, ?, ?)'; // Updated the SQL to match the stored procedure
-        const result = await db.query(sql, [name, hashedPassword, email, role, department, req.session.user.role]); // Passing the Admin's role as p_creator_role
-        
-        // Debug: Log the result from the database query
-        console.log('Database response:', result);
+        let sql = 'CALL CreateUser(?, ?, ?, ?, ?, ?)';
+        const result = await db.query(sql, [name, hashedPassword, email, role, department, creatorRole]);
 
+        console.log('Database response:', result);
         await db.end();
+
         console.log('User created successfully, closing database connection');
 
-        // Redirect to homepage after successful signup
-        res.redirect('/admin-view-all-users');
+        // Render the signup success page, passing the name to display
+        res.render('signup-success.ejs', { name });
 
     } catch (error) {
         console.error('Error during signup process:', error);
 
-        // Handle the case where the user already exists
         if (error.sqlMessage && error.sqlMessage.includes('User with this email already exists')) {
-            console.log('User with this email already exists, sending error response');
             return res.status(400).send('User with this email already exists.');
         }
-
-        console.log('An internal server error occurred, sending error response');
         res.status(500).send('Internal Server Error');
     }
 });
@@ -190,37 +155,78 @@ function isAuthenticated(req, res, next) {
     }
 }
 
-// Route for agent dashboard
-app.get('/admin-dashboard', isAuthenticated, (req, res) => {
-    if (req.session.user.role !== 'Admin') {
-        return res.redirect('/admin-view-all-users');
- // If not an admin, redirect to the homepage
+// Middleware to check if the user is authenticated and a user
+function isUser(req, res, next) {
+    if (req.session && req.session.user) {
+        if (req.session.user.role === 'user') {
+            return next(); // Proceed if the user is a normal user
+        } else {
+            return res.status(403).send('Access denied: You do not have permission to view this page.');
+        }
+    } else {
+        return res.redirect('/login'); // Redirect to login if not logged in
     }
+}
 
-    res.render('admin-dashboard.ejs', { userName: req.session.user.username });
-});
 
-app.get('/agent-dashboard', (req, res) => {
-    const userName = req.session.user.username; // Use username from the session
+// Middleware to check if the user is authenticated and is an agent
+function isAgent(req, res, next) {
+    if (req.session && req.session.user) {
+        if (req.session.user.role === 'agent' || req.session.user.role === 'Admin') {
+            return next(); // Proceed if the user is an agent or admin
+        } else {
+            return res.status(403).send('Access denied: You do not have permission to view this page.');
+        }
+    } else {
+        return res.redirect('/login'); // Redirect to login if not logged in
+    }
+}
+
+// Middleware to check if the user is authenticated and is an admin
+function isAdmin(req, res, next) {
+    if (req.session && req.session.user) {
+        if (req.session.user.role === 'Admin') {
+            return next(); // Proceed if the user is an admin
+        } else {
+            return res.status(403).send('Access denied: Admins only.');
+        }
+    } else {
+        return res.redirect('/login'); // Redirect to login if not logged in
+    }
+}
+
+// Protect dashboard routes with authentication
+app.get('/agent-dashboard', isAuthenticated, isAgent, (req, res) => {
+    const userName = req.session.user.username; // Use the username from the session
     res.render('agent-dashboard.ejs', { userName });
 });
 
-app.get('/user-dashboard', (req, res) => {
+app.get('/admin-dashboard', isAuthenticated, isAdmin, (req, res) => {
+    const userName = req.session.user.username; // Use the username from the session
+    res.render('admin-dashboard.ejs', { userName });
+});
+
+app.get('/user-dashboard', isAuthenticated, (req, res) => {
     const userName = req.session.user.username; // Use username from the session
     res.render('user-dashboard.ejs', { userName });
 });
+
 
 app.get('/logout', (req, res) => {
     req.session.destroy((err) => {
         if (err) {
             return res.status(500).send('Failed to logout.');
         }
-        res.render('logout.ejs'); // Rendera logout.ejs efter utloggning
+        // Redirect to the login page after session is destroyed
+        res.redirect('/login');
     });
 });
 
 
 
+
+
+// Protect ticket creation
 app.get('/create-ticket', isAuthenticated, (req, res) => {
     const userName = req.session.user.username; // Use username from the session
     res.render('create-ticket.ejs', { userName });
@@ -247,22 +253,13 @@ app.post('/create-ticket', isAuthenticated, upload.single('attachment'), async (
     }
 });
 
-
-
-
-
 // Example route to fetch tickets with attachments
-app.get('/view-tickets', async (req, res) => {
-    if (!req.session.user) {
-        return res.redirect('/login');
-    }
-
+app.get('/view-tickets', isAuthenticated, async (req, res) => {
     const userId = req.session.user.id;
 
     try {
         const db = await connectToDatabase();
         
-        // Hämta användarens biljetter
         const ticketsSql = `
             SELECT t.ticket_id, t.title, t.description, t.category, t.status, t.created_at, a.file_name AS attachment
             FROM tickets t
@@ -272,20 +269,17 @@ app.get('/view-tickets', async (req, res) => {
         `;
         const [tickets] = await db.query(ticketsSql, [userId]);
 
-        // Hämta kategorierna
         const categoriesSql = "SELECT * FROM categories";
         const [categories] = await db.query(categoriesSql);
 
         await db.end();
 
-        // Skicka både biljetter och kategorier till vyn
         res.render('view-tickets.ejs', { tickets, categories });
     } catch (error) {
         console.error('Error fetching tickets or categories:', error);
         res.status(500).send('Error fetching tickets or categories');
     }
 });
-
 
 // Visa alla biljetter för agenter
 app.get('/view-all-tickets', isAuthenticated, async (req, res) => {
@@ -348,6 +342,67 @@ app.get('/admin-view-all-tickets', isAuthenticated, async (req, res) => {
     }
 });
 
+app.get('/view-ticket/:id', isAuthenticated, async (req, res) => {
+    const ticketId = req.params.id;
+    const userId = req.session.user.id; 
+
+    try {
+        const db = await connectToDatabase();
+        const ticketSql = `
+            SELECT t.ticket_id, t.title, t.description, t.status, t.category, t.created_at, 
+            u.username AS created_by, a.file_name AS attachment
+            FROM tickets t
+            LEFT JOIN users u ON t.user_id = u.user_id
+            LEFT JOIN attachments a ON t.ticket_id = a.ticket_id
+            WHERE t.ticket_id = ? AND (t.user_id = ? OR ? IN ('agent', 'Admin'));
+        `;
+        const [ticket] = await db.query(ticketSql, [ticketId, userId, req.session.user.role]);
+
+        await db.end();
+
+        if (!ticket.length) {
+            return res.status(404).send('Ticket not found');
+        }
+
+        res.render('ticket.ejs', { ticket: ticket[0], userName: req.session.user.username });
+
+    } catch (error) {
+        console.error('Error fetching ticket details:', error);
+        res.status(500).send('Error fetching ticket details');
+    }
+});
+
+
+app.post('/update-ticket/:id', isAuthenticated, async (req, res) => {
+    const ticketId = req.params.id;
+    const { title, description, status, category } = req.body;  // Grab new values from the form
+    const userId = req.session.user.id;
+
+    try {
+        const db = await connectToDatabase();
+
+        // Ensure only the creator (user) or an agent/admin can update the ticket
+        const updateTicketSql = `
+            UPDATE tickets 
+            SET title = ?, description = ?, status = ?, category = ? 
+            WHERE ticket_id = ? AND (user_id = ? OR ? IN ('agent', 'Admin'));
+        `;
+        const result = await db.query(updateTicketSql, [title, description, status, category, ticketId, userId, req.session.user.role]);
+
+        await db.end();
+
+        if (result.affectedRows === 0) {
+            return res.status(404).send('Ticket not found or you do not have permission to update this ticket');
+        }
+
+        res.redirect(`/view-ticket/${ticketId}`);  // Redirect back to the ticket details page
+
+    } catch (error) {
+        console.error('Error updating ticket:', error);
+        res.status(500).send('Error updating ticket');
+    }
+});
+
 
 // Route to change the status of a ticket
 app.get('/change-status/:id', isAuthenticated, async (req, res) => {
@@ -401,42 +456,48 @@ app.post('/update-category/:id', isAuthenticated, async (req, res) => {
 
 // Visa alla användaren för agenter
 
-app.get('/view-all-users', isAuthenticated, async (req, res) => {
+app.get('/view-all-users', async (req, res) => {
+    // Check if the user is logged in
+    if (!req.session.user) {
+        return res.redirect('/login');  // If not logged in, redirect to login page
+    }
+
+    // Optionally, you can add role-based access control (if necessary)
+    if (req.session.user.role !== 'agent' && req.session.user.role !== 'Admin') {
+        return res.status(403).send('Access denied: You do not have permission to view this page.');
+    }
+
     let db;
     try {
-        db = await connectToDatabase(); // Använd den befintliga funktionen för att ansluta till databasen
+        db = await connectToDatabase(); // Connect to the database
 
-        const sql = `SELECT * FROM users WHERE role IN ('user', 'agent') ORDER BY user_id DESC;`; // SQL-fråga för att hämta alla användare
-        console.log('Executing SQL:', sql); // Logga SQL-frågan
+        const sql = `SELECT * FROM users WHERE role IN ('user', 'agent') ORDER BY user_id DESC;`; // SQL query to fetch users
+        console.log('Executing SQL:', sql); // Log the SQL query
         
-        const [users] = await db.query(sql); // Exekvera frågan och hämta användare
-        console.log('Users fetched from database:', users); // Logga de hämtade användarna
+        const [users] = await db.query(sql); // Execute the query and fetch users
+        console.log('Users fetched from database:', users); // Log the fetched users
 
-        // Rendera view-all-users.ejs och passera användarna och användarnamnet till mallen
+        // Render the 'view-all-users.ejs' page, passing the users and current user's username
         res.render('view-all-users.ejs', { users, userName: req.session.user.username });
     } catch (error) {
-        console.error('Error fetching users:', error.message); // Logga eventuella fel
-        res.status(500).send('Error fetching users'); // Skicka ett felmeddelande som svar
+        console.error('Error fetching users:', error.message); // Log any errors
+        res.status(500).send('Error fetching users'); // Send an error message as the response
     } finally {
         if (db) {
-            await db.end(); // Stäng anslutningen till databasen
+            await db.end(); // Close the database connection
         }
     }
 });
 
-// Admin view all users and manage them
-app.get('/admin-view-all-users', isAuthenticated, async (req, res) => {
-    if (req.session.user.role !== 'Admin') {
-        return res.redirect('/'); // Only admin can view users
-    }
 
+// Admin view all users and manage them
+app.get('/admin-view-all-users', isAuthenticated, isAdmin, async (req, res) => {
     try {
         const db = await connectToDatabase();
         const usersSql = `SELECT * FROM users WHERE role IN ('user', 'agent') ORDER BY user_id DESC;`;
         const [users] = await db.query(usersSql);
         await db.end();
 
-        // Render 'admin-view-all-users.ejs' and pass users to the view
         res.render('admin-view-all-users.ejs', { users, userName: req.session.user.username });
     } catch (error) {
         console.error('Error fetching users for admin:', error);
@@ -444,52 +505,19 @@ app.get('/admin-view-all-users', isAuthenticated, async (req, res) => {
     }
 });
 
-// Display ticket information
-app.get('/view-ticket/:id', isAuthenticated, async (req, res) => {
-    const ticketId = req.params.id;  // Get the ticket ID from the URL parameter
-    
-    try {
-        const db = await connectToDatabase();
-        const ticketSql = `
-            SELECT t.ticket_id, t.title, t.description, t.status, t.category, t.created_at, 
-            u.username AS created_by, a.file_name AS attachment
-            FROM tickets t
-            LEFT JOIN users u ON t.user_id = u.user_id
-            LEFT JOIN attachments a ON t.ticket_id = a.ticket_id
-            WHERE t.ticket_id = ?;
-        `;
 
-        const [ticket] = await db.query(ticketSql, [ticketId]);
-        await db.end();
-
-        if (!ticket.length) {
-            return res.status(404).send('Ticket not found');
-        }
-
-        // Render the view-ticket.ejs file with the ticket details
-        res.render('ticket.ejs', { ticket: ticket[0], userName: req.session.user.username });
-    } catch (error) {
-        console.error('Error fetching ticket details:', error);
-        res.status(500).send('Error fetching ticket details');
-    }
-});
 
 
 // Admin route to delete a user
-app.get('/admin/delete-user/:id', isAuthenticated, async (req, res) => {
-    if (req.session.user.role !== 'Admin') {
-        return res.redirect('/');  // Only Admins can delete users
-    }
-
+app.get('/admin/delete-user/:id', isAuthenticated, isAdmin, async (req, res) => {
     const userId = req.params.id;
 
     try {
         const db = await connectToDatabase();
-        const deleteUserSql = 'DELETE FROM users WHERE user_id = ?';  // SQL to delete user by id
+        const deleteUserSql = 'DELETE FROM users WHERE user_id = ?';
         await db.query(deleteUserSql, [userId]);
         await db.end();
 
-        // Redirect to view-all-users after deletion
         res.redirect('/admin-view-all-users');
     } catch (error) {
         console.error('Error deleting user:', error);
@@ -499,16 +527,13 @@ app.get('/admin/delete-user/:id', isAuthenticated, async (req, res) => {
 
 
 // Admin route to update user role
-app.get('/admin/update-role/:id', isAuthenticated, async (req, res) => {
-    if (req.session.user.role !== 'Admin') {
-        return res.redirect('/');  // Only Admins can update user roles
-    }
-
+// Protect route to change user role (only for admin)
+app.get('/admin/update-role/:id', isAuthenticated, isAdmin, async (req, res) => {
     const userId = req.params.id;
     const newRole = req.query.role;
 
     if (!['user', 'agent'].includes(newRole)) {
-        return res.status(400).send('Invalid role');  // Validate role
+        return res.status(400).send('Invalid role');
     }
 
     try {
@@ -517,7 +542,6 @@ app.get('/admin/update-role/:id', isAuthenticated, async (req, res) => {
         await db.query(updateRoleSql, [newRole, userId]);
         await db.end();
 
-        // Redirect back to the user list or wherever appropriate
         res.redirect('/admin-view-all-users');
     } catch (error) {
         console.error('Error updating user role:', error);
@@ -584,7 +608,7 @@ app.post('/add-category', isAuthenticated, async (req, res) => {
     }
 
     const newCategory = req.body.category_name;  
-    console.log("fetched category: ", newCategory);
+    console.log("fetched category: ", newCategory)
 
     if (!newCategory) {
         return res.status(400).send('Category name is required');
@@ -603,6 +627,149 @@ app.post('/add-category', isAuthenticated, async (req, res) => {
         res.status(500).send('Error adding category. Details: ' + err.message);
     }
 });
+
+app.get('/agent-articles', isAgent, async (req, res) => {
+    try {
+        const db = await connectToDatabase();
+        
+        // Uppdatera SQL-frågan för att inkludera användarnamnet
+        const articlesSql = `
+            SELECT k.article_id, k.title, k.content, k.created_at, u.username AS created_by 
+            FROM knowledgeBase k 
+            JOIN users u ON k.created_by = u.user_id
+            ORDER BY k.created_at DESC
+        `;
+        
+        const [articles] = await db.query(articlesSql);
+        await db.end();
+
+        res.render('agent-articles.ejs', { articles, userName: req.session.user.username });
+    } catch (error) {
+        console.error('Error fetching articles:', error);
+        res.status(500).send('Error fetching articles');
+    }
+});
+
+
+
+// Route för att skapa en ny artikel
+app.post('/agent-articles/create', isAgent, async (req, res) => {
+    const { title, content } = req.body;
+    const userId = req.session.user.id;
+
+    try {
+        const db = await connectToDatabase();
+        const insertArticleSql = 'INSERT INTO knowledgeBase (title, content, created_by) VALUES (?, ?, ?)';
+        await db.query(insertArticleSql, [title, content, userId]);
+        await db.end();
+
+        res.redirect('/agent-articles');
+    } catch (error) {
+        console.error('Error creating article:', error);
+        res.status(500).send('Error creating article');
+    }
+});
+
+
+app.get('/agent-article/:id', isAgent, async (req, res) => {
+    const articleId = req.params.id;
+
+    try {
+        const db = await connectToDatabase();
+        const articleSql = 'SELECT * FROM knowledgeBase WHERE article_id = ?';
+        const [article] = await db.query(articleSql, [articleId]);
+
+        const commentsSql = 'SELECT c.content, c.created_at, u.username FROM article_comments c JOIN users u ON c.user_id = u.user_id WHERE article_id = ? ORDER BY c.created_at ASC';
+        const [comments] = await db.query(commentsSql, [articleId]);
+
+        await db.end();
+
+        res.render('agent-article.ejs', { article: article[0], comments, userName: req.session.user.username });
+    } catch (error) {
+        console.error('Error fetching article or comments:', error);
+        res.status(500).send('Error fetching article or comments');
+    }
+});
+
+// Route för att lägga till en kommentar på en artikel
+app.post('/agent-article/:id/comment', isAgent, async (req, res) => {
+    const articleId = req.params.id;
+    const userId = req.session.user.id;
+    const { comment } = req.body;
+
+    try {
+        const db = await connectToDatabase();
+        const commentSql = 'INSERT INTO article_comments (article_id, user_id, content) VALUES (?, ?, ?)';
+        await db.query(commentSql, [articleId, userId, comment]);
+        await db.end();
+
+        res.redirect(`/agent-article/${articleId}`);
+    } catch (error) {
+        console.error('Error adding comment:', error);
+        res.status(500).send('Error adding comment');
+    }
+});
+
+
+
+app.get('/view-comments/:ticket_id', isAuthenticated, async (req, res) => {
+    const ticketId = req.params.ticket_id;
+    const userRole = req.session.user.role;  // Retrieve the role from the session
+
+    try {
+        const db = await connectToDatabase();
+
+        // Fetch comments for the ticket
+        const commentsSql = `
+            SELECT c.content, c.created_at, u.username AS sender_name, c.sender_role 
+            FROM comments c
+            JOIN users u ON c.user_id = u.user_id
+            WHERE c.ticket_id = ?
+            ORDER BY c.created_at ASC;
+        `;
+        const [comments] = await db.query(commentsSql, [ticketId]);
+
+        await db.end();
+
+        // Check the role and render the correct EJS view
+        if (userRole === 'agent') {
+            res.render('view-comments-agent.ejs', { ticket_id: ticketId, comments });
+        } else {
+            res.render('view-comments.ejs', { ticket_id: ticketId, comments });
+        }
+    } catch (error) {
+        console.error('Error fetching comments:', error);
+        res.status(500).send('Error fetching comments');
+    }
+});
+
+
+app.post('/add-comment/:ticket_id', isAuthenticated, async (req, res) => {
+    const ticketId = req.params.ticket_id;
+    const userId = req.session.user.id; // The logged-in user
+    const content = req.body.content;
+    const userRole = req.session.user.role;  // Retrieve the role from the session
+
+    try {
+        const db = await connectToDatabase();
+
+        // Insert the new comment into the comments table
+        const commentSql = `
+            INSERT INTO comments (ticket_id, user_id, content, sender_role)
+            VALUES (?, ?, ?, ?);
+        `;
+        await db.query(commentSql, [ticketId, userId, content, userRole]);
+
+        await db.end();
+
+        // Redirect back to the comments page based on user role
+        res.redirect(`/view-comments/${ticketId}`);
+    } catch (error) {
+        console.error('Error adding comment:', error);
+        res.status(500).send('Error adding comment');
+    }
+});
+
 
 
 // Start server

@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="/public/style.css"> <!-- Din CSS-fil -->
+    <title>Login</title>
+    <header class="main-header">
+        <div class="container">
+            <nav>
+                <ul>
+                    <li><a href="/agent-articles">Articles</a></li>
+                    <li><a href="/view-all-tickets">View All Tickets</a></li>
+                    <li><a href="/view-all-users">View All Users</a></li>
+                    <li><a href="/logout">Logout</a></li>
+                </ul>
+            </nav>
+        </div>
+    </header>
+    <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <meta http-equiv="X-UA-Compatible" content="IE=edge">
+        <!-- <title>Ticketing System</title> -->
+        <link rel="stylesheet" href="/articl.css">
+    
+    </head>
+<section class="article-section">
+    <h1><%= article.title %></h1>
+    <p><%= article.content %></p>
+    <p>Published by <strong><%= article.created_by %></strong> on <%= new Date(article.created_at).toDateString() %></p>
+
+    <h2>Comments</h2>
+    <ul class="comment-list">
+        <% comments.forEach(comment => { %>
+            <li><strong><%= comment.username %>:</strong> <%= comment.content %> (Posted on: <%= comment.created_at %>)</li>
+        <% }) %>
+    </ul>
+
+    <section class="comment-section">
+        <h3>Add a Comment</h3>
+        <form action="/agent-article/<%= article.article_id %>/comment" method="POST">
+            <textarea name="comment" rows="5" required></textarea>
+            <button type="submit">Post Comment</button>
+        </form>
+    </section>
+</section>
+
+<footer>
+    <p>Logged in as: <%= userName %></p>
+    <a href="/logout">Logout</a>
+</footer>

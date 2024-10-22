@@ -11,6 +11,7 @@
   "license": "ISC",
   "dependencies": {
     "bcrypt": "^5.1.1",
+    "connect-redis": "^7.1.1",
     "ejs": "^3.1.10",
     "express": "^4.21.0",
     "express-session": "^1.18.0",
@@ -23,7 +24,8 @@
     "node-imap": "^0.9.6",
     "nodemailer": "^6.9.15",
     "oauth": "^0.10.0",
-    "promise-mysql": "^5.2.0"
+    "promise-mysql": "^5.2.0",
+    "redis": "^4.7.0"
   },
   "keywords": [],
   "description": "",

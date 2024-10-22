@@ -42,6 +42,7 @@
                     <th>Attachment</th>
                     <th>Created At</th>
                     <th>Actions</th>
+                    <th>Comments</th>
                 </tr>
             </thead>
             <tbody>
@@ -78,6 +79,11 @@
                                 <a href="/change-status/<%= ticket.ticket_id %>?status=closed" class="btn btn-closed">Close Ticket</a>
                             <% } %>
                         </td>
+                        <td>
+                            <!-- Link to view comments for the ticket -->
+                            <a href="/view-comments/<%= ticket.ticket_id %>" class="btn btn-comments">View Comments</a>
+                        </td>
+                        
                     </tr>
                 <% }); %>
             </tbody>            
