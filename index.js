@@ -53,10 +53,17 @@ app.get('/', (req, res) => {
     res.render('index.ejs');
 });
 
-app.get('/signup', (req, res) => {
+// Only allow access to the signup page if the user is an admin
+app.get('/signup', isAuthenticated, isAdmin, (req, res) => {
+    console.log("User role:", req.session.user.role);
+    if (req.session.user.role !== 'Admin') {
+        return res.redirect('/'); // Omdirigera om användaren inte har rätt roll
+    }
     res.render('signup.ejs');
 });
-app.post('/signup', async (req, res) => {
+
+// Only allow the admin to create new accounts
+app.post('/signup', isAuthenticated, isAdmin, async (req, res) => {
     console.log('Entered signup route');
 
     const { name, email, password, department } = req.body;
@@ -91,6 +98,7 @@ app.post('/signup', async (req, res) => {
         res.status(500).send('Internal Server Error');
     }
 });
+
 
 
 app.post('/login', async (req, res) => {
@@ -145,29 +153,23 @@ app.post('/login', async (req, res) => {
     }
 });
 
-// Middleware to check if the user is logged in
+// Middleware to check if the user is authenticated
 function isAuthenticated(req, res, next) {
     if (req.session && req.session.user) {
         return next(); // User is logged in, proceed to the next middleware or route
     } else {
-        console.log("User is not authenticated, redirecting to login.");
         return res.redirect('/login'); // If not logged in, redirect to the login page
     }
 }
 
-// Middleware to check if the user is authenticated and a user
-function isUser(req, res, next) {
-    if (req.session && req.session.user) {
-        if (req.session.user.role === 'user') {
-            return next(); // Proceed if the user is a normal user
-        } else {
-            return res.status(403).send('Access denied: You do not have permission to view this page.');
-        }
+// Middleware to check if the user is an admin
+function isAdmin(req, res, next) {
+    if (req.session && req.session.user && req.session.user.role === 'Admin') {
+        return next(); // User is an admin, proceed to the next middleware or route
     } else {
-        return res.redirect('/login'); // Redirect to login if not logged in
+        return res.status(403).send('Access denied: Admins only.');
     }
 }
-
 
 // Middleware to check if the user is authenticated and is an agent
 function isAgent(req, res, next) {
@@ -182,31 +184,35 @@ function isAgent(req, res, next) {
     }
 }
 
-// Middleware to check if the user is authenticated and is an admin
-function isAdmin(req, res, next) {
-    if (req.session && req.session.user) {
-        if (req.session.user.role === 'Admin') {
-            return next(); // Proceed if the user is an admin
-        } else {
-            return res.status(403).send('Access denied: Admins only.');
-        }
-    } else {
-        return res.redirect('/login'); // Redirect to login if not logged in
-    }
-}
 
 // Protect dashboard routes with authentication
 app.get('/agent-dashboard', isAuthenticated, isAgent, (req, res) => {
+    console.log("User role:", req.session.user.role);
+    if (req.session.user.role !== 'agent') {
+        return res.redirect('/'); // Omdirigera om användaren inte har rätt roll
+    }
     const userName = req.session.user.username; // Use the username from the session
     res.render('agent-dashboard.ejs', { userName });
 });
 
 app.get('/admin-dashboard', isAuthenticated, isAdmin, (req, res) => {
+    console.log("User role:", req.session.user.role);
+    if (req.session.user.role !== 'Admin') {
+        return res.redirect('/'); // Omdirigera om användaren inte har rätt roll
+    }
     const userName = req.session.user.username; // Use the username from the session
     res.render('admin-dashboard.ejs', { userName });
 });
 
 app.get('/user-dashboard', isAuthenticated, (req, res) => {
+    console.log("User role:", req.session.user.role);
+    if (req.session.user.role !== 'user') {
+        return res.redirect('/'); // Omdirigera om användaren inte har rätt roll
+    }
+    console.log("User role:", req.session.user.role);
+    if (req.session.user.role !== 'user') {
+        return res.redirect('/'); // Omdirigera om användaren inte har rätt roll
+    }
     const userName = req.session.user.username; // Use username from the session
     res.render('user-dashboard.ejs', { userName });
 });
@@ -228,6 +234,10 @@ app.get('/logout', (req, res) => {
 
 // Protect ticket creation
 app.get('/create-ticket', isAuthenticated, (req, res) => {
+    console.log("User role:", req.session.user.role);
+        if (req.session.user.role !== 'user') {
+            return res.redirect('/'); // Omdirigera om användaren inte har rätt roll
+        }
     const userName = req.session.user.username; // Use username from the session
     res.render('create-ticket.ejs', { userName });
 });
@@ -258,15 +268,21 @@ app.get('/view-tickets', isAuthenticated, async (req, res) => {
     const userId = req.session.user.id;
 
     try {
+        console.log("User role:", req.session.user.role);
+        if (req.session.user.role !== 'user') {
+            return res.redirect('/'); // Omdirigera om användaren inte har rätt roll
+        }
         const db = await connectToDatabase();
         
         const ticketsSql = `
-            SELECT t.ticket_id, t.title, t.description, t.category, t.status, t.created_at, a.file_name AS attachment
-            FROM tickets t
-            LEFT JOIN attachments a ON t.ticket_id = a.ticket_id
-            WHERE t.user_id = ?
-            ORDER BY t.ticket_id DESC;
-        `;
+        SELECT t.ticket_id, t.title, t.description, t.category, t.status, t.created_at, 
+               a.file_name AS attachment, a.original_name
+        FROM tickets t
+        LEFT JOIN attachments a ON t.ticket_id = a.ticket_id
+        WHERE t.user_id = ?
+        ORDER BY t.ticket_id DESC;
+    `;
+    
         const [tickets] = await db.query(ticketsSql, [userId]);
 
         const categoriesSql = "SELECT * FROM categories";
@@ -283,8 +299,9 @@ app.get('/view-tickets', isAuthenticated, async (req, res) => {
 
 // Visa alla biljetter för agenter
 app.get('/view-all-tickets', isAuthenticated, async (req, res) => {
-    try {
-        if (req.session.user.role !== 'agent' && req.session.user.role !== 'Admin') {
+    try { 
+        console.log("User role:", req.session.user.role);
+        if (req.session.user.role !== 'agent') {
             return res.redirect('/'); // Omdirigera om användaren inte har rätt roll
         }
 
@@ -293,7 +310,7 @@ app.get('/view-all-tickets', isAuthenticated, async (req, res) => {
         // Hämta biljetterna
         const ticketsSql = `
         SELECT t.ticket_id, t.title, t.description, t.status, t.category, t.created_at, 
-        u.username AS created_by, a.file_name AS attachment
+        u.username AS created_by, a.file_name AS attachment, a.original_name
         FROM tickets t
         LEFT JOIN users u ON t.user_id = u.user_id
         LEFT JOIN attachments a ON t.ticket_id = a.ticket_id;
@@ -322,6 +339,10 @@ app.get('/admin-view-all-tickets', isAuthenticated, async (req, res) => {
     }
 
     try {
+        console.log("User role:", req.session.user.role);
+        if (req.session.user.role !== 'Admin') {
+            return res.redirect('/'); // Omdirigera om användaren inte har rätt roll
+        }
         const db = await connectToDatabase();
         const ticketsSql = `
             SELECT t.ticket_id, t.title, t.description, t.status, t.category, t.created_at, 
@@ -348,6 +369,8 @@ app.get('/view-ticket/:id', isAuthenticated, async (req, res) => {
 
     try {
         const db = await connectToDatabase();
+
+        // Fetch ticket details
         const ticketSql = `
             SELECT t.ticket_id, t.title, t.description, t.status, t.category, t.created_at, 
             u.username AS created_by, a.file_name AS attachment
@@ -358,17 +381,26 @@ app.get('/view-ticket/:id', isAuthenticated, async (req, res) => {
         `;
         const [ticket] = await db.query(ticketSql, [ticketId, userId, req.session.user.role]);
 
+        // Fetch all categories
+        const categoriesSql = 'SELECT * FROM categories';
+        const [categories] = await db.query(categoriesSql);
+
         await db.end();
 
         if (!ticket.length) {
             return res.status(404).send('Ticket not found');
         }
 
-        res.render('ticket.ejs', { ticket: ticket[0], userName: req.session.user.username });
+        // Pass ticket details and categories to the view
+        res.render('ticket.ejs', { 
+            ticket: ticket[0], 
+            categories,  // Pass categories to the view
+            userName: req.session.user.username 
+        });
 
     } catch (error) {
-        console.error('Error fetching ticket details:', error);
-        res.status(500).send('Error fetching ticket details');
+        console.error('Error fetching ticket details or categories:', error);
+        res.status(500).send('Error fetching ticket details or categories');
     }
 });
 
@@ -463,7 +495,7 @@ app.get('/view-all-users', async (req, res) => {
     }
 
     // Optionally, you can add role-based access control (if necessary)
-    if (req.session.user.role !== 'agent' && req.session.user.role !== 'Admin') {
+    if (req.session.user.role !== 'agent') {
         return res.status(403).send('Access denied: You do not have permission to view this page.');
     }
 
@@ -493,6 +525,10 @@ app.get('/view-all-users', async (req, res) => {
 // Admin view all users and manage them
 app.get('/admin-view-all-users', isAuthenticated, isAdmin, async (req, res) => {
     try {
+        if (req.session.user.role !== 'Admin') {
+            return res.status(403).send('Access denied: You do not have permission to view this page.');
+        }
+
         const db = await connectToDatabase();
         const usersSql = `SELECT * FROM users WHERE role IN ('user', 'agent') ORDER BY user_id DESC;`;
         const [users] = await db.query(usersSql);
@@ -592,23 +628,30 @@ app.get('/change-status/:id', isAuthenticated, async (req, res) => {
 
 //Skapa en route för att visa formuläret för att skapa nya kategorier
 
-app.get('/add-category', isAuthenticated, (req, res) => {
-    // Kontrollera att bara agenter och admin kan lägga till nya kategorier
-    if (req.session.user.role !== 'agent' && req.session.user.role !== 'Admin') {
-        return res.redirect('/');  // Endast agenter och admin kan komma åt denna sida
+app.get('/agent-area', isAuthenticated, isAgent, async (req, res) => {
+    try {
+        if (req.session.user.role !== 'agent') {
+            return res.status(403).send('Access denied: You do not have permission to view this page.');
+        }
+        const db = await connectToDatabase();
+
+        // Fetch categories
+        const categoriesSql = 'SELECT * FROM categories';
+        const [categories] = await db.query(categoriesSql);
+
+        await db.end();
+
+        // Render agent-area.ejs with categories data
+        res.render('agent-area.ejs', { categories });
+    } catch (error) {
+        console.error('Error fetching categories:', error);
+        res.status(500).send('Error fetching categories');
     }
-    res.render('add-category.ejs');  // Rendera sidan för att lägga till en ny kategori
 });
 
-app.post('/add-category', isAuthenticated, async (req, res) => {
-    console.log('Request body:', req.body);  // Log the request body to check the data
 
-    if (req.session.user.role !== 'agent' && req.session.user.role !== 'Admin') {
-        return res.redirect('/');  // Redirect unauthorized users
-    }
-
-    const newCategory = req.body.category_name;  
-    console.log("fetched category: ", newCategory)
+app.post('/agent-area/add-category', isAuthenticated, isAgent, async (req, res) => {
+    const newCategory = req.body.category_name;
 
     if (!newCategory) {
         return res.status(400).send('Category name is required');
@@ -623,13 +666,17 @@ app.post('/add-category', isAuthenticated, async (req, res) => {
         await db.end();  // Close the connection
         res.redirect('/view-all-tickets');  // Redirect after successful addition
     } catch (err) {
-        console.error('Detailed Error Info:', err);  // Log the full error object
-        res.status(500).send('Error adding category. Details: ' + err.message);
+        console.error('Error adding category:', err);
+        res.status(500).send('Error adding category');
     }
 });
 
+
 app.get('/agent-articles', isAgent, async (req, res) => {
     try {
+        if (req.session.user.role !== 'agent') {
+            return res.status(403).send('Access denied: You do not have permission to view this page.');
+        }
         const db = await connectToDatabase();
         
         // Uppdatera SQL-frågan för att inkludera användarnamnet
@@ -675,6 +722,9 @@ app.get('/agent-article/:id', isAgent, async (req, res) => {
     const articleId = req.params.id;
 
     try {
+        if (req.session.user.role !== 'agent') {
+            return res.status(403).send('Access denied: You do not have permission to view this page.');
+        }
         const db = await connectToDatabase();
         const articleSql = 'SELECT * FROM knowledgeBase WHERE article_id = ?';
         const [article] = await db.query(articleSql, [articleId]);
@@ -769,7 +819,6 @@ app.post('/add-comment/:ticket_id', isAuthenticated, async (req, res) => {
         res.status(500).send('Error adding comment');
     }
 });
-
 
 
 // Start server

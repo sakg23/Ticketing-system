@@ -47,10 +47,12 @@ CREATE TABLE tickets (
 CREATE TABLE attachments (
     attachment_id INT AUTO_INCREMENT PRIMARY KEY,
     ticket_id INT,
-    file_name VARCHAR(255),
+    file_name VARCHAR(255),          -- Timestamped file name
+    original_name VARCHAR(255),      -- Original file name
     uploaded_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     FOREIGN KEY (ticket_id) REFERENCES tickets(ticket_id) ON DELETE CASCADE
 );
+
 
 -- Skapa tabell 4: comments
 CREATE TABLE comments (

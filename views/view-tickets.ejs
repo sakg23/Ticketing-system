@@ -41,7 +41,7 @@
                     <th>Category</th>
                     <th>Attachment</th>
                     <th>Created At</th>
-                    <th>Actions</th>
+                    <th>View Ticket</th>
                     <th>Comments</th>
                 </tr>
             </thead>
@@ -51,33 +51,20 @@
                         <td><%= ticket.title %></td>
                         <td><%= ticket.description %></td>
                         <td><%= ticket.status %></td>
-                        <td>
-                            <form action="/update-category/<%= ticket.ticket_id %>" method="POST">
-                                <select name="category">
-                                    <% categories.forEach(function(category) { %>
-                                        <option value="<%= category.category_name %>" <%= ticket.category === category.category_name ? 'selected' : '' %>>
-                                            <%= category.category_name %>
-                                        </option>
-                                    <% }) %>
-                                </select>
-                                <button type="submit">Update</button>
-                            </form>
-                        </td>                                           
+                        <td><%= ticket.category %></td>                                         
                         <td>
                             <% if (ticket.attachment) { %>
-                                <a href="/uploads/<%= ticket.attachment %>" download>Download Attachment</a>
+                                <a href="/uploads/<%= ticket.attachment %>" download="<%= ticket.original_name %>">
+                                    Download <%= ticket.original_name %> (ID: <%= ticket.attachment %>)
+                                </a>
                             <% } else { %>
                                 No attachment
-                            <% } %>
+                            <% } %>                            
                         </td>                                                 
                         <td><%= new Date(ticket.created_at).toLocaleString() %></td>
                         <td>
-                            <!-- Actions: Växla mellan Close och Open beroende på ticket status -->
-                            <% if (ticket.status === 'closed') { %>
-                                <a href="/change-status/<%= ticket.ticket_id %>?status=open" class="btn btn-open">Open Ticket</a>
-                            <% } else { %>
-                                <a href="/change-status/<%= ticket.ticket_id %>?status=closed" class="btn btn-closed">Close Ticket</a>
-                            <% } %>
+                            <!-- New link to view ticket -->
+                            <a href="/view-ticket/<%= ticket.ticket_id %>" class="btn btn-view">View Ticket</a>
                         </td>
                         <td>
                             <!-- Link to view comments for the ticket -->

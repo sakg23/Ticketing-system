@@ -21,25 +21,48 @@
         <link rel="stylesheet" href="/style.css">
     
     </head>
-
-<div class="ticket-details-container">
-    <h1>Ticket Details</h1>
-    <div class="ticket-details">
-        <p><strong>Title:</strong> <span class="ticket-info"><%= ticket.title %></span></p>
-        <p><strong>Description:</strong> <span class="ticket-info"><%= ticket.description %></span></p>
-        <p><strong>Status:</strong> <span class="ticket-info <%= ticket.status === 'open' ? 'status-open' : 'status-closed' %>">
-            <%= ticket.status %>
-        </span></p>
-        <p><strong>Category:</strong> <span class="ticket-info"><%= ticket.category %></span></p>
-        <p><strong>Created By:</strong> <span class="ticket-info"><%= ticket.created_by %></span></p>
-        <p><strong>Created At:</strong> <span class="ticket-info"><%= new Date(ticket.created_at).toLocaleString() %></span></p>
-
-        <% if (ticket.attachment) { %>
-            <p><strong>Attachment:</strong> <a class="ticket-attachment" href="/uploads/<%= ticket.attachment %>">Open</a></p>
-        <% } else { %>
-            <p class="ticket-no-attachment">No attachments available</p>
-        <% } %>
-
-        <!-- Add commnts secion-->
+    <div class="ticket-details-container">
+        <h1>Ticket Details</h1>
+        <div class="ticket-details">
+            <p><strong>Title:</strong> <span class="ticket-info"><%= ticket.title %></span></p>
+            <p><strong>Description:</strong> <span class="ticket-info"><%= ticket.description %></span></p>
+            <p><strong>Status:</strong> 
+                <span class="ticket-info <%= ticket.status === 'open' ? 'status-open' : 'status-closed' %>">
+                    <%= ticket.status %>
+                </span>
+            </p>
+            <p><strong>Category:</strong></p>
+            
+            <!-- Form to update the category -->
+            <form action="/update-category/<%= ticket.ticket_id %>" method="POST" class="ticket-category-form">
+                <select name="category" class="ticket-category-select">
+                    <% categories.forEach(function(category) { %>
+                        <option value="<%= category.category_name %>" <%= ticket.category === category.category_name ? 'selected' : '' %>>
+                            <%= category.category_name %>
+                        </option>
+                    <% }) %>
+                </select>
+                <button type="submit" class="btn btn-update">Update</button>
+            </form>
+    
+            <p><strong>Created By:</strong> <span class="ticket-info"><%= ticket.created_by %></span></p>
+            <p><strong>Created At:</strong> <span class="ticket-info"><%= new Date(ticket.created_at).toLocaleString() %></span></p>
+    
+            <% if (ticket.attachment) { %>
+                <p><strong>Attachment:</strong> <a class="ticket-attachment" href="/uploads/<%= ticket.attachment %>">Open</a></p>
+            <% } else { %>
+                <p class="ticket-no-attachment">No attachments available</p>
+            <% } %>
+    
+            <!-- Status toggle button -->
+            <div class="ticket-status-toggle">
+                <p><strong>Action:</strong></p>
+                <% if (ticket.status === 'closed') { %>
+                    <a href="/change-status/<%= ticket.ticket_id %>?status=open" class="btn btn-open ticket-action-button">Open Ticket</a>
+                <% } else { %>
+                    <a href="/change-status/<%= ticket.ticket_id %>?status=closed" class="btn btn-closed ticket-action-button">Close Ticket</a>
+                <% } %>
+            </div>
+        </div>
     </div>
-</div>
+    

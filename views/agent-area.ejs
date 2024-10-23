@@ -1,0 +1,23 @@
+<%- include("./partials/header.ejs") %>
+
+
+
+<div class="container">
+    <h1>Agent Area - Manage Categories</h1>
+
+    <!-- Form to add new category -->
+    <form action="/agent-area/add-category" method="POST">
+        <label for="category_name">New Category:</label>
+        <input type="text" id="category_name" name="category_name" required>
+        <button type="submit">Add Category</button>
+    </form>
+
+    <h2>Current Categories:</h2>
+    <ul>
+        <% categories.forEach(function(category) { %>
+            <li><%= category.category_name %></li>
+        <% }) %>
+    </ul>
+</div>
+
+<%- include("./partials/footer.ejs") %>

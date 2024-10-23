@@ -104,22 +104,26 @@ async function sendTicketUpdateEmail(email, ticketId, updateDetails) {
 
 
 const handleFileUpload = async (req) => {
-    const { title, description, category } = req.body;  // Extract ticket details from request
-    const file = req.file;  // Access uploaded file via Multer
-    
+    const { title, description, category } = req.body;
+    const file = req.file;
+
     if (!file) {
         throw new Error('No file uploaded');
     }
 
-    // Create ticket and insert into the database
+    // Create the ticket in the database
     const ticketId = await createTicket(title, description, 'open', category, req.session.user.id);
 
-    // Insert file attachment into the database
-    const attachmentSql = 'INSERT INTO attachments (ticket_id, file_name) VALUES (?, ?)';
+    // Insert the file details into the attachments table with both original and new file names
+    const db = await connectToDatabase();
+    const attachmentSql = 'INSERT INTO attachments (ticket_id, file_name, original_name) VALUES (?, ?, ?)';
     await db.query(attachmentSql, [ticketId, file.filename, file.originalname]);
 
-    return { ticketId, fileName: file.filename };
+    await db.end();
+
+    return { ticketId, fileName: file.filename, originalName: file.originalname };
 };
+
 
 
 
