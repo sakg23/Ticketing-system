@@ -84,58 +84,58 @@
     <!-- JavaScript for filtering the table -->
     <script>
         // Existing function for general filtering (title, description, category, status)
-        function filterTable() {
-            var input = document.getElementById("searchInput");
-            var filter = input.value.toUpperCase();
-            var table = document.getElementById("ticketTable");
-            var tr = table.getElementsByTagName("tr");
-            
-            for (var i = 1; i < tr.length; i++) {
-                var tdTitle = tr[i].getElementsByTagName("td")[0]; // Title column
-                var tdDescription = tr[i].getElementsByTagName("td")[1]; // Description column
-                var tdStatus = tr[i].getElementsByTagName("td")[2]; // Status column
-                var tdCategory = tr[i].getElementsByTagName("td")[3]; // Category column
+    function filterTable() {
+    var input = document.getElementById("searchInput");
+    var filter = input.value.toUpperCase();
+    var table = document.getElementById("ticketTable");
+    var tr = table.getElementsByTagName("tr");
 
-                if (tdTitle || tdDescription || tdStatus || tdCategory) {
-                    var txtValueTitle = tdTitle.textContent || tdTitle.innerText;
-                    var txtValueDescription = tdDescription.textContent || tdDescription.innerText;
-                    var txtValueStatus = tdStatus.textContent || tdStatus.innerText;
-                    var txtValueCategory = tdCategory.textContent || tdCategory.innerText;
+    for (var i = 1; i < tr.length; i++) {
+        var tdTitle = tr[i].getElementsByTagName("td")[1]; // Adjusted for title column index
+        var tdDescription = tr[i].getElementsByTagName("td")[2]; // Adjusted for description column index
+        var tdStatus = tr[i].getElementsByTagName("td")[3]; // Adjusted for status column index
+        var tdCategory = tr[i].getElementsByTagName("td")[4]; // Adjusted for category column index
 
-                    if (txtValueTitle.toUpperCase().indexOf(filter) > -1 ||
-                        txtValueDescription.toUpperCase().indexOf(filter) > -1 ||
-                        txtValueStatus.toUpperCase().indexOf(filter) > -1 ||
-                        txtValueCategory.toUpperCase().indexOf(filter) > -1) {
-                        tr[i].style.display = "";
-                    } else {
-                        tr[i].style.display = "none";
-                    }
-                }
+        if (tdTitle || tdDescription || tdStatus || tdCategory) {
+            var txtValueTitle = tdTitle.textContent || tdTitle.innerText;
+            var txtValueDescription = tdDescription.textContent || tdDescription.innerText;
+            var txtValueStatus = tdStatus.textContent || tdStatus.innerText;
+            var txtValueCategory = tdCategory.textContent || tdCategory.innerText;
+
+            if (txtValueTitle.toUpperCase().indexOf(filter) > -1 ||
+                txtValueDescription.toUpperCase().indexOf(filter) > -1 ||
+                txtValueStatus.toUpperCase().indexOf(filter) > -1 ||
+                txtValueCategory.toUpperCase().indexOf(filter) > -1) {
+                tr[i].style.display = "";
+            } else {
+                tr[i].style.display = "none";
             }
         }
+    }
+}
 
-        // New function to filter by selected status (open/closed)
-        function filterStatus() {
-            var select = document.getElementById("statusSelect");
-            var filter = select.value.toUpperCase();
-            var table = document.getElementById("ticketTable");
-            var tr = table.getElementsByTagName("tr");
+function filterStatus() {
+    var select = document.getElementById("statusSelect");
+    var filter = select.value.toUpperCase();
+    var table = document.getElementById("ticketTable");
+    var tr = table.getElementsByTagName("tr");
 
-            for (var i = 1; i < tr.length; i++) {
-                var tdStatus = tr[i].getElementsByTagName("td")[4]; // Status column
+    for (var i = 1; i < tr.length; i++) {
+        var tdStatus = tr[i].getElementsByTagName("td")[2]; // Adjust to correct Status column index
 
-                if (tdStatus) {
-                    var txtValueStatus = tdStatus.textContent || tdStatus.innerText;
+        if (tdStatus) {
+            var txtValueStatus = tdStatus.textContent || tdStatus.innerText;
 
-                    // Show rows based on selected filter (open/closed or all)
-                    if (filter === "ALL" || txtValueStatus.toUpperCase() === filter) {
-                        tr[i].style.display = ""; // Show matching rows
-                    } else {
-                        tr[i].style.display = "none"; // Hide non-matching rows
-                    }
-                }
+            // Show rows based on selected filter (open/closed or all)
+            if (filter === "ALL" || txtValueStatus.toUpperCase() === filter) {
+                tr[i].style.display = ""; // Show matching rows
+            } else {
+                tr[i].style.display = "none"; // Hide non-matching rows
             }
         }
+    }
+}
+
     </script>
 
 </body>

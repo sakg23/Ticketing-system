@@ -655,7 +655,7 @@ table a:hover {
 
 /* textera */
 .add-comment-section form {
-    position: absolute;
+    position: relative;
     top: 10px;  /* Distance from the top of the page */
     right: 20px;  /* Distance from the right side of the page */
     width: 300px;  /* Adjust the width if necessary */
@@ -674,9 +674,9 @@ table a:hover {
 
 @media (min-width: 768px) {
     .add-comment-section form {
-        position: absolute;
+        position: relative;
         top: 10px;
-        right: 20px;
+        left: 10px;
         width: 300px;
         background-color: #f4f4f9;
         padding: 20px;

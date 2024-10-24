@@ -14,15 +14,16 @@ const storage = multer.diskStorage({
         cb(null, 'uploads/');  // Specify the directory for uploaded files
     },
     filename: function (req, file, cb) {
-        cb(null, Date.now() + path.extname(file.originalname));  // Rename the file
+        cb(null, Date.now() + path.extname(file.originalname));  // Rename the file using a timestamp
     }
 });
+
 
 const upload = multer({ storage: storage });
 
 app.post('/upload', upload.single('file'), async (req, res) => {
     try {
-        const result = await handleFileUpload(req);  // Handle the uploaded file
+        const result = await handleFileUpload(req);  // Call the file upload handler
         res.status(200).json({ success: true, message: 'File uploaded successfully', result });
     } catch (error) {
         res.status(500).json({ success: false, message: error.message });
@@ -313,13 +314,16 @@ app.get('/view-all-tickets', isAuthenticated, async (req, res) => {
         u.username AS created_by, a.file_name AS attachment, a.original_name
         FROM tickets t
         LEFT JOIN users u ON t.user_id = u.user_id
-        LEFT JOIN attachments a ON t.ticket_id = a.ticket_id;
+        LEFT JOIN attachments a ON t.ticket_id = a.ticket_id
+        ORDER BY t.ticket_id DESC;
         `;
         const [tickets] = await db.query(ticketsSql);
+        console.log("Tickets fetched:", tickets); // Log the tickets fetched
 
         // Hämta kategorierna
         const categoriesSql = "SELECT * FROM categories";
         const [categories] = await db.query(categoriesSql);
+        console.log("Categories fetched:", categories); // Log the categories fetched
 
         await db.end();
 
@@ -327,10 +331,11 @@ app.get('/view-all-tickets', isAuthenticated, async (req, res) => {
         res.render('view-all-tickets.ejs', { tickets, categories, userName: req.session.user.username });
 
     } catch (error) {
-        console.error('Error fetching tickets or categories:', error);
+        console.error('Error fetching tickets or categories:', error); // Log the specific error
         res.status(500).send('Error fetching tickets or categories');
     }
 });
+
 
 
 app.get('/admin-view-all-tickets', isAuthenticated, async (req, res) => {
@@ -633,6 +638,7 @@ app.get('/agent-area', isAuthenticated, isAgent, async (req, res) => {
         if (req.session.user.role !== 'agent') {
             return res.status(403).send('Access denied: You do not have permission to view this page.');
         }
+        
         const db = await connectToDatabase();
 
         // Fetch categories
@@ -641,8 +647,8 @@ app.get('/agent-area', isAuthenticated, isAgent, async (req, res) => {
 
         await db.end();
 
-        // Render agent-area.ejs with categories data
-        res.render('agent-area.ejs', { categories });
+        // Pass categories and userName to the view
+        res.render('agent-area.ejs', { categories, userName: req.session.user.username });
     } catch (error) {
         console.error('Error fetching categories:', error);
         res.status(500).send('Error fetching categories');
@@ -664,7 +670,7 @@ app.post('/agent-area/add-category', isAuthenticated, isAgent, async (req, res) 
         await db.query(query, [newCategory]);  // Execute the query
 
         await db.end();  // Close the connection
-        res.redirect('/view-all-tickets');  // Redirect after successful addition
+        res.redirect('/agent-area');  // Redirect after successful addition
     } catch (err) {
         console.error('Error adding category:', err);
         res.status(500).send('Error adding category');
