@@ -218,7 +218,7 @@ Here is your document draft:
 ## Managing Tickets and Users
 
 1. **Admin Functions**  
-   - Admins can view and manage all tickets and users via the `/admin-dashboard` and `/admin-view-all-users` pages.
+   - Admins can view and manage all tickets and users via the `/admin-dashboard` and `/admin-view-all-users` `/admin-view-all-tickets` pages.
 
 2. **Agent Functions**  
    - Agents can manage tickets, update categories, and comment on tickets.
