@@ -1,5 +1,5 @@
 Ticketing System
-Introduction
+Introduction:
 The Ticketing System is a web-based application designed to efficiently manage customer support tickets. It allows users to create tickets, attach relevant documents, and track their resolution. Agents can view and manage these tickets, categorize them, and communicate with users throughout the resolution process. The system implements role-based access to ensure that only authorized users (admin, agent, user) can access specific functionalities.
 
 This project is part of an initiative to streamline issue tracking and resolution processes, with a focus on security, user experience, and effective communication between agents and users.
@@ -123,7 +123,7 @@ MariaDB (Database)
 The project uses MariaDB for database management. You can install MariaDB. After installing, you’ll need to set up the database using the SQL scripts provided in the sql folder.
 
 Open MariaDB with the following command
-mariadb -h 172.18.174.238 -u dbadm -p
+mariadb -u <your_username> -p
 
 source sql/reset.sql;
 Ensure the user and password used in the database match those in your tecktingsystem.json file.
@@ -132,9 +132,9 @@ Environment Variables
 This project does not use a .env file, but you can directly modify the database connection in the config/db/tecktingsystem.json file:
 
 {
-    "host": "172.18.174.238",
-    "user":     "dbadm",
-    "password": "P@ssw0rd",
+    "host": "localhost",
+    "user":     "ur-username",
+    "password": "ur-password",
     "database": "ticketing_system",
     "multipleStatements": true
 }
@@ -155,7 +155,7 @@ Set Up the Database
 To initialize the MariaDB database, you will use the provided SQL scripts located in the sql folder.
 
 Run the reset script to create the tables and stored procedures:
-mariadb -h 172.18.174.238 -u dbadm -p
+mariadb -u <your_username> -p
 source sql/reset.sql;
 
 
@@ -165,18 +165,10 @@ Test
 To manually test the application, you can use the terminal and browser to check the different functionalities of the system.
 
 Start the server:
-
 node index.js
 Monitor the logs in the terminal to identify any issues with the server, database, or file uploads.
 
-2. Testing API Endpoints
-You can manually test the API endpoints using tools like Postman or cURL. For example, to test the ticket creation API:
-
-Set up a POST request in Postman to http://localhost:3000/create-ticket.
-Include necessary data such as the ticket title, description, and category.
-Check the server response to verify the functionality.
-
-3. Database Testing
+2. Database Testing
 Verify database operations by running SQL queries in MariaDB. For example, after creating a new ticket, run this query to check the ticket was added:
 
 SELECT * FROM tickets WHERE user_id = 1;
@@ -197,6 +189,7 @@ Email: admin@admin.ts
 Password:9912
 
 User Login: After admin creates users, they can log in with their credentials.
+
 3. Managing Tickets and Users
 Admin Functions: Admins can view and manage all tickets and users via the /admin-dashboard and /admin-view-all-users pages.
 Agent Functions: Agents can manage tickets, update categories, and comment on tickets.
@@ -214,5 +207,6 @@ Dashboard: Users, agents, and admins each have their own dashboard with specific
 Stopping the Server
 When you’re done using the application, stop the server by pressing CTRL + C in the terminal where the server is running.
 
-License
-This project is licensed under the MIT License - see the LICENSE file for details.
+## License
+
+This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
